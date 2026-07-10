@@ -87,7 +87,7 @@ class LoginPage extends StatelessWidget {
 }
 
 class _SocialLoginButton extends StatelessWidget {
-  final IconData icon;
+  final FaIconData icon;
   final String label;
   final Color color;
   final Color textColor;

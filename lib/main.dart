@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'features/auth/presentation/pages/login_page.dart';
 import 'features/radar/presentation/pages/radar_page.dart';
+import 'features/onboarding/presentation/pages/onboarding_page.dart';
 
 void main() {
   runApp(const KissMeApp());
@@ -19,9 +21,15 @@ class KissMeApp extends StatelessWidget {
           primary: Colors.pink,
         ),
         useMaterial3: true,
-        fontFamily: 'Roboto', // Pode ser substituída por uma fonte mais moderna
+        fontFamily: 'Roboto',
       ),
-      home: const RadarPage(),
+      // A primeira tela agora é a LoginPage
+      home: const LoginPage(),
+      routes: {
+        '/login': (context) => const LoginPage(),
+        '/onboarding': (context) => const OnboardingPage(),
+        '/radar': (context) => const RadarPage(),
+      },
     );
   }
 }

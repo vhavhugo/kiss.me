@@ -74,7 +74,7 @@ class LoginPage extends StatelessWidget {
               const SizedBox(height: 30),
               const Text(
                 "Ao entrar, você concorda com nossos Termos e Políticas.",
-                textAlign: Center,
+                textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.white54, fontSize: 12),
               ),
               const SizedBox(height: 20),

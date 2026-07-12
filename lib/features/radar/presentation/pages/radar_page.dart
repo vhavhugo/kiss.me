@@ -18,6 +18,18 @@ class _RadarPageState extends ConsumerState<RadarPage> {
   final PageController _pageController = PageController(viewportFraction: 0.85);
 
   @override
+  void initState() {
+    super.initState();
+    // Inicia a busca automaticamente ao carregar a tela
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authState = ref.read(authProvider);
+      if (authState.isOnline) {
+        ref.read(radarSearchProvider.notifier).startSearch(-23.5505, -46.6333);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final searchState = ref.watch(radarSearchProvider);

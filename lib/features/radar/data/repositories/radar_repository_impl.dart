@@ -10,9 +10,9 @@ class RadarRepositoryImpl implements RadarRepository {
   RadarRepositoryImpl(this._remoteDataSource, this._supabase);
 
   @override
-  Future<List<UserEntity>> getNearbyUsers(double lat, double lng) async {
-    // 1. Consulta ultra-rápida no Redis para pegar IDs num raio restrito de 5km
-    final ids = await _remoteDataSource.getNearbyUserIds(lat, lng, 5.0);
+  Future<List<UserEntity>> getNearbyUsers(double lat, double lng, double radiusKm) async {
+    // 1. Consulta ultra-rápida no Redis para pegar IDs no raio dinâmico
+    final ids = await _remoteDataSource.getNearbyUserIds(lat, lng, radiusKm);
 
     if (ids.isEmpty) {
       return [];

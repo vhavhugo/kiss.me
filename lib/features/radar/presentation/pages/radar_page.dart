@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../domain/entities/interaction_entity.dart';
 import '../../domain/entities/user_entity.dart';
+import '../providers/radar_search_provider.dart';
 import '../widgets/profile_card.dart';
 import '../widgets/action_button.dart';
+import '../widgets/dissolving_km_animation.dart';
+import '../../domain/entities/interaction_entity.dart';
 
 class RadarPage extends ConsumerStatefulWidget {
   const RadarPage({super.key});
@@ -16,50 +18,43 @@ class RadarPage extends ConsumerStatefulWidget {
 class _RadarPageState extends ConsumerState<RadarPage> {
   final PageController _pageController = PageController(viewportFraction: 0.85);
 
-  final List<UserEntity> _dummyUsers = [
-    UserEntity(
-      id: '1',
-      name: 'Julia',
-      photoUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800',
-      distanceInMeters: 350,
-      bio: 'Amo café e viagens inesperadas.',
-      icebreakers: [],
-    ),
-    UserEntity(
-      id: '2',
-      name: 'Marcos',
-      photoUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800',
-      distanceInMeters: 120,
-      bio: 'Músico nas horas vagas.',
-      icebreakers: [],
-    ),
-    UserEntity(
-      id: '3',
-      name: 'Beatriz',
-      photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800',
-      distanceInMeters: 500,
-      bio: 'Design e vinhos.',
-      icebreakers: [],
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
+    final searchState = ref.watch(radarSearchProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Kiss-me", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text("Kiss-me",
+            style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
-        leading: authState.isOnline 
-          ? const Tooltip(
-              message: "Você está On-line",
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: CircleAvatar(backgroundColor: Colors.green, radius: 5),
+        leading: GestureDetector(
+          onTap: () {
+            ref.read(authProvider.notifier).toggleOnlineStatus();
+            if (!authState.isOnline) {
+              // Simula busca ao entrar online (lat/lng mockadas para exemplo)
+              ref.read(radarSearchProvider.notifier).startSearch(-23.5505, -46.6333);
+            }
+          },
+          child: Tooltip(
+            message: authState.isOnline ? "Você está On-line" : "Você está Off-line",
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: CircleAvatar(
+                backgroundColor: authState.isOnline ? Colors.green : Colors.grey,
+                radius: 8,
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: authState.isOnline
+                        ? [BoxShadow(color: Colors.green.withAlpha(100), blurRadius: 10, spreadRadius: 2)]
+                        : [],
+                  ),
+                ),
               ),
-            )
-          : null,
+            ),
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -70,40 +65,64 @@ class _RadarPageState extends ConsumerState<RadarPage> {
           )
         ],
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  "Radar Ativo",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.pink),
-                ),
-                const SizedBox(width: 8),
-                if (authState.isOnline)
-                  const Text(
-                    "• On-line",
-                    style: TextStyle(fontSize: 14, color: Colors.green, fontWeight: FontWeight.bold),
-                  ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: _dummyUsers.length,
-              itemBuilder: (context, index) {
-                return ProfileCard(user: _dummyUsers[index]);
-              },
-            ),
-          ),
-          const SizedBox(height: 20),
-          _buildActionButtons(),
-          const SizedBox(height: 40),
-        ],
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 800),
+        child: _buildMainContent(authState, searchState),
       ),
+    );
+  }
+
+  Widget _buildMainContent(AuthState auth, RadarSearchState search) {
+    // Regra: Se Offline ou se estiver buscando (sem usuários encontrados ainda)
+    if (!auth.isOnline || (search.isSearching && search.users.isEmpty)) {
+      return Column(
+        key: const ValueKey('searching_content'),
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          DissolvingKmAnimation(radiusKm: search.currentRadiusKm),
+          const SizedBox(height: 20),
+          Text(
+            !auth.isOnline ? "Fique On-line para buscar" : "Expandindo radar...",
+            style: const TextStyle(fontSize: 18, color: Colors.grey),
+          ),
+        ],
+      );
+    }
+
+    // Regra: Se Online e encontrou os pretendentes
+    return Column(
+      key: const ValueKey('results_content'),
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                "Encontramos alguém!",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.pink),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                "Raio: ${search.currentRadiusKm.toStringAsFixed(1)}km",
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: search.users.length,
+            itemBuilder: (context, index) {
+              return ProfileCard(user: search.users[index]);
+            },
+          ),
+        ),
+        const SizedBox(height: 20),
+        _buildActionButtons(),
+        const SizedBox(height: 40),
+      ],
     );
   }
 

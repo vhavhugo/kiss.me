@@ -50,8 +50,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     );
   }
 
-  void setOnboardingComplete() {
-    state = state.copyWith(status: AuthStatus.authenticated);
+  void toggleOnlineStatus() {
+    state = state.copyWith(isOnline: !state.isOnline);
   }
 
   void logout() {

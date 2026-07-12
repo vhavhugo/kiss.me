@@ -10,8 +10,8 @@ void main() async {
 
   // Inicializa o Supabase antes de rodar o app
   await Supabase.initialize(
-    url: 'SUA_SUPABASE_URL',
-    anonKey: 'SUA_SUPABASE_ANON_KEY',
+    url: 'https://tfjnbbybrdcmjxwlcuzw.supabase.co/rest/v1/',
+    anonKey: 'sb_publishable_VK51tv5QTgZZbWce8dnCSQ_5Jxoc8hA',
   );
 
   runApp(

@@ -10,78 +10,123 @@ class DissolvingKmAnimation extends StatefulWidget {
 }
 
 class _DissolvingKmAnimationState extends State<DissolvingKmAnimation>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _opacityAnimation;
-  late Animation<double> _scaleAnimation;
-
+    with TickerProviderStateMixin {
+  late AnimationController _pulseController;
+  late AnimationController _rotationController;
+  
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+    
+    // Controlador para o pulso das ondas de radar
+    _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(milliseconds: 2500),
     )..repeat();
 
-    _opacityAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
-
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.5).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
+    // Controlador para a rotação suave do gradiente
+    _rotationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    )..repeat();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _pulseController.dispose();
+    _rotationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    String distanceText = widget.radiusKm < 1.0
-        ? '${(widget.radiusKm * 1000).toInt()}m'
-        : '${widget.radiusKm.toStringAsFixed(1)}km';
+    // Lógica de exibição elegante: metros se < 1km, km se >= 1km
+    final bool isMeters = widget.radiusKm < 1.0;
+    final String unit = isMeters ? 'm' : 'km';
+    final String value = isMeters 
+        ? (widget.radiusKm * 1000).toInt().toString() 
+        : widget.radiusKm.toStringAsFixed(1);
 
     return Center(
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Círculo pulsante de busca
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              return Container(
-                width: 200 * _scaleAnimation.value,
-                height: 200 * _scaleAnimation.value,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.pink.withAlpha((_opacityAnimation.value * 255).toInt()),
-                    width: 2,
+          // Ondas de Radar pulsantes e elegantes
+          ...List.generate(3, (index) {
+            return AnimatedBuilder(
+              animation: _pulseController,
+              builder: (context, child) {
+                double progress = (_pulseController.value + index / 3) % 1.0;
+                return Container(
+                  width: 300 * progress,
+                  height: 300 * progress,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.pink.withAlpha((255 * (1 - progress)).toInt()),
+                      width: 1.5,
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
-          // Texto do KM dissolvendo
-          FadeTransition(
-            opacity: _opacityAnimation,
-            child: ScaleTransition(
-              scale: _scaleAnimation,
-              child: Text(
-                distanceText,
-                style: const TextStyle(
-                  fontSize: 48,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.pink,
+                );
+              },
+            );
+          }),
+
+          // Brilho central rotativo
+          RotationTransition(
+            turns: _rotationController,
+            child: Container(
+              width: 180,
+              height: 180,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: SweepGradient(
+                  colors: [
+                    Colors.pink.withAlpha(0),
+                    Colors.pink.withAlpha(150),
+                    Colors.pink.withAlpha(0),
+                  ],
+                  stops: const [0.0, 0.5, 1.0],
                 ),
               ),
             ),
           ),
-          // Radar Icon fixo no centro
-          const Icon(Icons.radar, size: 40, color: Colors.pink),
+
+          // Container do Texto (O "KM" ou "M" que dissolve)
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 500),
+                style: const TextStyle(
+                  fontSize: 64,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.pink,
+                  letterSpacing: -2,
+                ),
+                child: Text(value),
+              ),
+              Text(
+                unit,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w300,
+                  color: Colors.pink.withAlpha(180),
+                  letterSpacing: 4,
+                ),
+              ),
+            ],
+          ),
+          
+          // Ícone de busca sutil
+          Positioned(
+            bottom: -40,
+            child: Icon(
+              Icons.favorite_rounded,
+              color: Colors.pink.withAlpha(50),
+              size: 24,
+            ),
+          ),
         ],
       ),
     );

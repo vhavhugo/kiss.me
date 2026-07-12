@@ -1,5 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/auth_user_entity.dart';
+import '../../domain/repositories/auth_repository.dart';
+import '../../data/repositories/auth_repository_impl.dart';
+import '../../../radar/presentation/providers/radar_provider.dart';
 
 enum AuthStatus { unauthenticated, authenticating, authenticated, onboarding }
 
@@ -27,27 +30,53 @@ class AuthState {
   }
 }
 
-class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier() : super(AuthState(status: AuthStatus.unauthenticated));
+final authRepositoryProvider = Provider<AuthRepository>((ref) {
+  return AuthRepositoryImpl(ref.read(supabaseProvider));
+});
 
+class AuthNotifier extends StateNotifier<AuthState> {
+  final AuthRepository _repository;
+
+  AuthNotifier(this._repository) : super(AuthState(status: AuthStatus.unauthenticated));
+
+  Future<void> loginWithGoogle() async {
+    state = state.copyWith(status: AuthStatus.authenticating);
+    try {
+      final user = await _repository.signInWithGoogle();
+      
+      if (user != null) {
+        state = state.copyWith(
+          status: AuthStatus.authenticated,
+          user: user,
+          isOnline: true,
+        );
+      } else {
+        state = state.copyWith(status: AuthStatus.unauthenticated);
+      }
+    } catch (e) {
+      state = state.copyWith(status: AuthStatus.unauthenticated);
+      rethrow;
+    }
+  }
+
+  // Fallback para login manual/mock
   Future<void> login(String provider) async {
     state = state.copyWith(status: AuthStatus.authenticating);
-    
-    // Simula um delay de rede realista
     await Future.delayed(const Duration(seconds: 2));
-
-    // Mock do usuário autenticado
     final mockUser = AuthUserEntity(
       id: 'uuid-12345',
       email: 'usuario@$provider.com',
       isFirstLogin: true,
     );
-
     state = state.copyWith(
       status: AuthStatus.authenticated,
       user: mockUser,
-      isOnline: true, // Aqui o usuário fica oficialmente "On-line"
+      isOnline: true,
     );
+  }
+
+  void setOnboardingComplete() {
+    state = state.copyWith(status: AuthStatus.authenticated);
   }
 
   void toggleOnlineStatus() {
@@ -60,5 +89,5 @@ class AuthNotifier extends StateNotifier<AuthState> {
 }
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  return AuthNotifier();
+  return AuthNotifier(ref.read(authRepositoryProvider));
 });

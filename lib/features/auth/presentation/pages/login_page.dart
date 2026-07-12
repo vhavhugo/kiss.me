@@ -51,7 +51,7 @@ class LoginPage extends ConsumerWidget {
                         label: "Entrar com Google",
                         color: Colors.white,
                         textColor: Colors.black87,
-                        onTap: () => _handleLogin(context, ref, 'google'),
+                        onTap: () => _handleGoogleLogin(context, ref),
                       ),
                       const SizedBox(height: 15),
                       _SocialLoginButton(
@@ -86,6 +86,22 @@ class LoginPage extends ConsumerWidget {
     );
   }
 
+  void _handleGoogleLogin(BuildContext context, WidgetRef ref) async {
+    try {
+      await ref.read(authProvider.notifier).loginWithGoogle();
+      if (context.mounted) {
+        Navigator.pushReplacementNamed(context, '/onboarding');
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Falha no login: $e')),
+        );
+      }
+    }
+  }
+
+  // Mantemos o mock apenas para os outros botões por enquanto
   void _handleLogin(BuildContext context, WidgetRef ref, String provider) async {
     await ref.read(authProvider.notifier).login(provider);
     if (context.mounted) {

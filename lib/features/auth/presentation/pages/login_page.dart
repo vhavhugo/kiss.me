@@ -45,7 +45,8 @@ class LoginPage extends StatelessWidget {
                       color: Colors.white,
                       textColor: Colors.black87,
                       onTap: () {
-                        // TODO: Implement Google Sign In
+                        // Por enquanto, navega para onboarding para teste
+                        Navigator.pushNamed(context, '/onboarding');
                       },
                     ),
                     const SizedBox(height: 15),
@@ -55,7 +56,7 @@ class LoginPage extends StatelessWidget {
                       color: Colors.purple[700]!,
                       textColor: Colors.white,
                       onTap: () {
-                        // TODO: Implement Instagram Sign In
+                        Navigator.pushNamed(context, '/onboarding');
                       },
                     ),
                     const SizedBox(height: 15),
@@ -65,7 +66,7 @@ class LoginPage extends StatelessWidget {
                       color: Colors.black,
                       textColor: Colors.white,
                       onTap: () {
-                        // TODO: Implement TikTok Sign In
+                        Navigator.pushNamed(context, '/onboarding');
                       },
                     ),
                   ],

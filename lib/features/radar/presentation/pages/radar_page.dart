@@ -42,9 +42,13 @@ class _RadarPageState extends ConsumerState<RadarPage> {
         leading: GestureDetector(
           onTap: () {
             ref.read(authProvider.notifier).toggleOnlineStatus();
-            if (!authState.isOnline) {
-              // Simula busca ao entrar online (lat/lng mockadas para exemplo)
+            final newAuthState = ref.read(authProvider);
+            if (newAuthState.isOnline) {
+              // Inicia do zero
               ref.read(radarSearchProvider.notifier).startSearch(-23.5505, -46.6333);
+            } else {
+              // Para e ativa efeito Offline
+              ref.read(radarSearchProvider.notifier).stopSearch();
             }
           },
           child: Tooltip(

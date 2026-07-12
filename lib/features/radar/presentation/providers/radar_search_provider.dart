@@ -36,8 +36,14 @@ class RadarSearchNotifier extends StateNotifier<RadarSearchState> {
       : super(RadarSearchState(users: [], currentRadiusKm: 0.5, isSearching: false));
 
   void startSearch(double lat, double lng) async {
-    state = state.copyWith(isSearching: true, users: [], currentRadiusKm: 0.5);
+    _expansionTimer?.cancel();
+    state = state.copyWith(isSearching: true, users: [], currentRadiusKm: 0.2); // Inicia com 200m
     _performSearch(lat, lng);
+  }
+
+  void stopSearch() {
+    _expansionTimer?.cancel();
+    state = state.copyWith(isSearching: false, users: [], currentRadiusKm: 0.0); // Zera o raio para efeito Offline
   }
 
   void _performSearch(double lat, double lng) async {

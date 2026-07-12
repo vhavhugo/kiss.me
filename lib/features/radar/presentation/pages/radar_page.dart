@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/interaction_entity.dart';
 import '../../domain/entities/user_entity.dart';
 import '../widgets/profile_card.dart';
 import '../widgets/action_button.dart';
 
-class RadarPage extends StatefulWidget {
+class RadarPage extends ConsumerStatefulWidget {
   const RadarPage({super.key});
 
   @override
-  State<RadarPage> createState() => _RadarPageState();
+  ConsumerState<RadarPage> createState() => _RadarPageState();
 }
 
-class _RadarPageState extends State<RadarPage> {
+class _RadarPageState extends ConsumerState<RadarPage> {
   final PageController _pageController = PageController(viewportFraction: 0.85);
 
-  // Dados fictícios para visualização inicial
   final List<UserEntity> _dummyUsers = [
     UserEntity(
       id: '1',
@@ -44,21 +45,49 @@ class _RadarPageState extends State<RadarPage> {
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Kiss-me", style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.black,
+        leading: authState.isOnline 
+          ? const Tooltip(
+              message: "Você está On-line",
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: CircleAvatar(backgroundColor: Colors.green, radius: 5),
+              ),
+            )
+          : null,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              ref.read(authProvider.notifier).logout();
+              Navigator.pushReplacementNamed(context, '/login');
+            },
+          )
+        ],
       ),
       body: Column(
         children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
-            child: Text(
-              "Alguém especial está por perto...",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.grey),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  "Radar Ativo",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.pink),
+                ),
+                const SizedBox(width: 8),
+                if (authState.isOnline)
+                  const Text(
+                    "• On-line",
+                    style: TextStyle(fontSize: 14, color: Colors.green, fontWeight: FontWeight.bold),
+                  ),
+              ],
             ),
           ),
           Expanded(

@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/radar/presentation/pages/radar_page.dart';
 import 'features/onboarding/presentation/pages/onboarding_page.dart';
 
 void main() {
-  runApp(const KissMeApp());
+  runApp(
+    const ProviderScope(
+      child: KissMeApp(),
+    ),
+  );
 }
 
 class KissMeApp extends StatelessWidget {

@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../providers/auth_provider.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends ConsumerWidget {
   const LoginPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -35,43 +39,39 @@ class LoginPage extends StatelessWidget {
                 style: TextStyle(color: Colors.white70, fontSize: 16),
               ),
               const Spacer(flex: 3),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30),
-                child: Column(
-                  children: [
-                    _SocialLoginButton(
-                      icon: FontAwesomeIcons.google,
-                      label: "Entrar com Google",
-                      color: Colors.white,
-                      textColor: Colors.black87,
-                      onTap: () {
-                        // Por enquanto, navega para onboarding para teste
-                        Navigator.pushNamed(context, '/onboarding');
-                      },
-                    ),
-                    const SizedBox(height: 15),
-                    _SocialLoginButton(
-                      icon: FontAwesomeIcons.instagram,
-                      label: "Entrar com Instagram",
-                      color: Colors.purple[700]!,
-                      textColor: Colors.white,
-                      onTap: () {
-                        Navigator.pushNamed(context, '/onboarding');
-                      },
-                    ),
-                    const SizedBox(height: 15),
-                    _SocialLoginButton(
-                      icon: FontAwesomeIcons.tiktok,
-                      label: "Entrar com TikTok",
-                      color: Colors.black,
-                      textColor: Colors.white,
-                      onTap: () {
-                        Navigator.pushNamed(context, '/onboarding');
-                      },
-                    ),
-                  ],
+              if (authState.status == AuthStatus.authenticating)
+                const CircularProgressIndicator(color: Colors.white)
+              else
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  child: Column(
+                    children: [
+                      _SocialLoginButton(
+                        icon: FontAwesomeIcons.google,
+                        label: "Entrar com Google",
+                        color: Colors.white,
+                        textColor: Colors.black87,
+                        onTap: () => _handleLogin(context, ref, 'google'),
+                      ),
+                      const SizedBox(height: 15),
+                      _SocialLoginButton(
+                        icon: FontAwesomeIcons.instagram,
+                        label: "Entrar com Instagram",
+                        color: Colors.purple[700]!,
+                        textColor: Colors.white,
+                        onTap: () => _handleLogin(context, ref, 'instagram'),
+                      ),
+                      const SizedBox(height: 15),
+                      _SocialLoginButton(
+                        icon: FontAwesomeIcons.tiktok,
+                        label: "Entrar com TikTok",
+                        color: Colors.black,
+                        textColor: Colors.white,
+                        onTap: () => _handleLogin(context, ref, 'tiktok'),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
               const SizedBox(height: 30),
               const Text(
                 "Ao entrar, você concorda com nossos Termos e Políticas.",
@@ -84,6 +84,14 @@ class LoginPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _handleLogin(BuildContext context, WidgetRef ref, String provider) async {
+    await ref.read(authProvider.notifier).login(provider);
+    if (context.mounted) {
+      // Após o login, leva para o onboarding
+      Navigator.pushReplacementNamed(context, '/onboarding');
+    }
   }
 }
 

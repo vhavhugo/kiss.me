@@ -119,7 +119,21 @@ class _RadarPageState extends ConsumerState<RadarPage> {
           ),
         ),
         const SizedBox(height: 20),
-        _buildActionButtons(),
+        // Os botões agora aparecem junto com as cartas dentro do estado "encontrado"
+        TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0.0, end: 1.0),
+          duration: const Duration(milliseconds: 1000),
+          curve: Curves.easeOutBack,
+          builder: (context, value, child) {
+            return Transform.translate(
+              offset: Offset(0, 50 * (1 - value)),
+              child: Opacity(
+                opacity: value,
+                child: _buildActionButtons(),
+              ),
+            );
+          },
+        ),
         const SizedBox(height: 40),
       ],
     );

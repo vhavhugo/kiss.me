@@ -41,19 +41,21 @@ class RadarSearchNotifier extends StateNotifier<RadarSearchState> {
   }
 
   void _performSearch(double lat, double lng) async {
-    // 1. Atualiza apenas a flag de busca, mas mantém o raio visual aumentando
+    // Se estiver Offline, para tudo
+    if (!state.isSearching) return;
+
+    // 1. Consulta ao backend
     final users = await _repository.getNearbyUsers(lat, lng, state.currentRadiusKm);
 
     if (users.isNotEmpty) {
-      // Delay sutil para o usuário ver o número final antes das cartas aparecerem
-      await Future.delayed(const Duration(milliseconds: 800));
+      // ENCONTROU: Para a expansão e mostra os resultados
       state = state.copyWith(users: users, isSearching: false);
       _expansionTimer?.cancel();
     } else {
-      // Se não encontrou, aumenta o raio gradativamente
-      if (state.currentRadiusKm < 20.0) { // Limite razoável de 20km
+      // NÃO ENCONTROU: Aumenta o raio visualmente E continua a busca
+      if (state.currentRadiusKm < 50.0) {
         _expansionTimer = Timer(const Duration(seconds: 2), () {
-          double nextRadius = _getNextRadius(state.currentRadiusKm);
+          final nextRadius = _getNextRadius(state.currentRadiusKm);
           state = state.copyWith(currentRadiusKm: nextRadius);
           _performSearch(lat, lng);
         });
@@ -64,10 +66,10 @@ class RadarSearchNotifier extends StateNotifier<RadarSearchState> {
   }
 
   double _getNextRadius(double current) {
-    // Incrementos mais fluidos e realistas
-    if (current < 1.0) return current + 0.2; // +200m
+    // Incrementos garantidos para o usuário ver o KM subindo
+    if (current < 1.0) return current + 0.1; // +100m (mais suave)
     if (current < 5.0) return current + 0.5; // +500m
-    return current + 1.0; // +1km
+    return current + 2.0; // +2km
   }
 
   @override

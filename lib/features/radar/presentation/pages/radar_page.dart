@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../domain/entities/user_entity.dart';
 import '../providers/radar_search_provider.dart';
 import '../widgets/profile_card.dart';
 import '../widgets/action_button.dart';

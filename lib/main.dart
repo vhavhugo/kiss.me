@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/radar/presentation/pages/radar_page.dart';
 import 'features/onboarding/presentation/pages/onboarding_page.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicializa o Supabase antes de rodar o app
+  await Supabase.initialize(
+    url: 'SUA_SUPABASE_URL',
+    anonKey: 'SUA_SUPABASE_ANON_KEY',
+  );
+
   runApp(
     const ProviderScope(
       child: KissMeApp(),

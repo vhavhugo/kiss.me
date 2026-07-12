@@ -11,28 +11,43 @@ class RadarRepositoryImpl implements RadarRepository {
 
   @override
   Future<List<UserEntity>> getNearbyUsers(double lat, double lng) async {
-    // 1. Consulta ultra-rápida no Redis para pegar IDs num raio de 10km
-    final ids = await _remoteDataSource.getNearbyUserIds(lat, lng, 10.0);
+    // 1. Consulta ultra-rápida no Redis para pegar IDs num raio restrito de 5km
+    final ids = await _remoteDataSource.getNearbyUserIds(lat, lng, 5.0);
 
     if (ids.isEmpty) {
       return [];
     }
 
-    // 2. Busca os detalhes dos perfis no PostgreSQL apenas para os IDs encontrados no Redis
+    // 2. Busca e Filtra no PostgreSQL baseado no perfil selecionado anteriormente
+    // Filtramos por: IDs próximos (do Redis) + Preferências de Gênero do usuário logado
+    final currentUser = _supabase.auth.currentUser;
+    if (currentUser == null) return [];
+
+    // Pegamos as preferências do usuário logado primeiro
+    final myProfile = await _supabase
+        .from('profiles')
+        .select('search_preference')
+        .eq('id', currentUser.id)
+        .single();
+
+    final searchPrefs = List<String>.from(myProfile['search_preference'] ?? []);
+
+    // 3. Busca perfis que batem com a preferência
     final response = await _supabase
         .from('profiles')
         .select('*, icebreakers(*)')
-        .filter('id', 'in', ids);
+        .filter('id', 'in', ids)
+        .filter('gender', 'in', searchPrefs);
 
-    // 3. Mapeamento para entidades de domínio
+    // 4. Mapeamento para entidades de domínio
     return (response as List).map((profile) {
       return UserEntity(
         id: profile['id'],
         name: profile['display_name'],
         photoUrl: profile['photo_url'] ?? '',
-        distanceInMeters: 0.0, // A distância exata pode ser calculada ou ignorada por privacidade
+        distanceInMeters: 0.0,
         bio: profile['bio'] ?? '',
-        icebreakers: [], // Mapear questões se necessário
+        icebreakers: [],
       );
     }).toList();
   }

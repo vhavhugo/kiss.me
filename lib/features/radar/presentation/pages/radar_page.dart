@@ -36,7 +36,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Kiss-me",
+        title: const Text("Kiss Me",
             style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         leading: GestureDetector(

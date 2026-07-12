@@ -26,7 +26,7 @@ class LoginPage extends ConsumerWidget {
               const Spacer(flex: 2),
               const Icon(Icons.favorite, color: Colors.white, size: 80),
               const Text(
-                "Kiss-me",
+                "Kiss Me",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 42,

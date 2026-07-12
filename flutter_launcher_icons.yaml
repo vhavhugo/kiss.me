@@ -1,0 +1,6 @@
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/app_icon.png"
+  adaptive_icon_background: "#E91E63" # Cor rosa padrão do projeto
+  adaptive_icon_foreground: "assets/images/app_icon.png"

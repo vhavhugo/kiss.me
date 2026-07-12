@@ -90,68 +90,90 @@ class _RadarPageState extends ConsumerState<RadarPage> {
   Widget _buildMainContent(AuthState auth, RadarSearchState search) {
     // Regra: Se Offline ou se estiver buscando (sem usuários encontrados ainda)
     if (!auth.isOnline || (search.isSearching && search.users.isEmpty)) {
-      return Column(
+      return LayoutBuilder(
         key: const ValueKey('searching_content'),
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          DissolvingKmAnimation(radiusKm: search.currentRadiusKm),
-          const SizedBox(height: 20),
-          Text(
-            !auth.isOnline ? "Fique On-line para buscar" : "Expandindo radar...",
-            style: const TextStyle(fontSize: 18, color: Colors.grey),
-          ),
-        ],
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  DissolvingKmAnimation(radiusKm: search.currentRadiusKm),
+                  const SizedBox(height: 20),
+                  Text(
+                    !auth.isOnline ? "Fique On-line para buscar" : "Expandindo radar...",
+                    style: const TextStyle(fontSize: 18, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       );
     }
 
     // Regra: Se Online e encontrou os pretendentes
-    return Column(
+    return LayoutBuilder(
       key: const ValueKey('results_content'),
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                "Encontramos alguém!",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.pink),
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: IntrinsicHeight(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "Encontramos alguém!",
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.pink),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          "Raio: ${search.currentRadiusKm.toStringAsFixed(1)}km",
+                          style: const TextStyle(fontSize: 14, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    height: constraints.maxHeight * 0.6, // Limita altura do PageView
+                    child: PageView.builder(
+                      controller: _pageController,
+                      itemCount: search.users.length,
+                      itemBuilder: (context, index) {
+                        return ProfileCard(user: search.users[index]);
+                      },
+                    ),
+                  ),
+                  const Spacer(), // Empurra botões para baixo
+                  const SizedBox(height: 20),
+                  // Os botões agora aparecem junto com as cartas dentro do estado "encontrado"
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0.0, end: 1.0),
+                    duration: const Duration(milliseconds: 1000),
+                    curve: Curves.easeOutBack,
+                    builder: (context, value, child) {
+                      return Transform.translate(
+                        offset: Offset(0, 50 * (1 - value)),
+                        child: Opacity(
+                          opacity: value,
+                          child: _buildActionButtons(),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 40),
+                ],
               ),
-              const SizedBox(width: 8),
-              Text(
-                "Raio: ${search.currentRadiusKm.toStringAsFixed(1)}km",
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-            ],
+            ),
           ),
-        ),
-        Expanded(
-          child: PageView.builder(
-            controller: _pageController,
-            itemCount: search.users.length,
-            itemBuilder: (context, index) {
-              return ProfileCard(user: search.users[index]);
-            },
-          ),
-        ),
-        const SizedBox(height: 20),
-        // Os botões agora aparecem junto com as cartas dentro do estado "encontrado"
-        TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0.0, end: 1.0),
-          duration: const Duration(milliseconds: 1000),
-          curve: Curves.easeOutBack,
-          builder: (context, value, child) {
-            return Transform.translate(
-              offset: Offset(0, 50 * (1 - value)),
-              child: Opacity(
-                opacity: value,
-                child: _buildActionButtons(),
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 40),
-      ],
+        );
+      },
     );
   }
 

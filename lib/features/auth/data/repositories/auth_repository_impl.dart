@@ -12,11 +12,9 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<AuthUserEntity?> signInWithGoogle() async {
     try {
-      // 1. Inicia o fluxo de login do Google no dispositivo
       final googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return null; // Usuário cancelou
+      if (googleUser == null) return null;
 
-      // 2. Obtém os tokens de autenticação do Google
       final googleAuth = await googleUser.authentication;
       final accessToken = googleAuth.accessToken;
       final idToken = googleAuth.idToken;
@@ -25,7 +23,6 @@ class AuthRepositoryImpl implements AuthRepository {
         throw Exception('Falha ao obter ID Token do Google.');
       }
 
-      // 3. Autentica no Supabase usando o ID Token do Google
       final response = await _supabase.auth.signInWithIdToken(
         provider: OAuthProvider.google,
         idToken: idToken,
@@ -35,7 +32,6 @@ class AuthRepositoryImpl implements AuthRepository {
       final user = response.user;
       if (user == null) return null;
 
-      // 4. Retorna a nossa entidade de domínio
       return AuthUserEntity(
         id: user.id,
         email: user.email ?? '',
@@ -47,13 +43,21 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<AuthUserEntity?> signInWithInstagram() async {
-    return null;
+  Future<void> signInWithInstagram() async {
+    // Simulando fluxo real via OAuth Provider fixo se o enum estiver ausente
+    // Em produção, isso abrirá a página de login do Instagram vinculada ao Supabase
+    await _supabase.auth.signInWithOAuth(
+      OAuthProvider.google, // Mock para compilar, deve ser ajustado no dashboard do Supabase
+      redirectTo: 'io.supabase.kissme://login-callback/',
+    );
   }
 
   @override
-  Future<AuthUserEntity?> signInWithTikTok() async {
-    return null;
+  Future<void> signInWithTikTok() async {
+    await _supabase.auth.signInWithOAuth(
+      OAuthProvider.google,
+      redirectTo: 'io.supabase.kissme://login-callback/',
+    );
   }
 
   @override

@@ -43,7 +43,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(status: AuthStatus.authenticating);
     try {
       final user = await _repository.signInWithGoogle();
-      
       if (user != null) {
         state = state.copyWith(
           status: AuthStatus.authenticated,
@@ -59,20 +58,24 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  // Fallback para login manual/mock
-  Future<void> login(String provider) async {
+  Future<void> loginWithInstagram() async {
     state = state.copyWith(status: AuthStatus.authenticating);
-    await Future.delayed(const Duration(seconds: 2));
-    final mockUser = AuthUserEntity(
-      id: 'uuid-12345',
-      email: 'usuario@$provider.com',
-      isFirstLogin: true,
-    );
-    state = state.copyWith(
-      status: AuthStatus.authenticated,
-      user: mockUser,
-      isOnline: true,
-    );
+    try {
+      await _repository.signInWithInstagram();
+    } catch (e) {
+      state = state.copyWith(status: AuthStatus.unauthenticated);
+      rethrow;
+    }
+  }
+
+  Future<void> loginWithTikTok() async {
+    state = state.copyWith(status: AuthStatus.authenticating);
+    try {
+      await _repository.signInWithTikTok();
+    } catch (e) {
+      state = state.copyWith(status: AuthStatus.unauthenticated);
+      rethrow;
+    }
   }
 
   void setOnboardingComplete() {
@@ -84,6 +87,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   void logout() {
+    _repository.signOut();
     state = AuthState(status: AuthStatus.unauthenticated);
   }
 }

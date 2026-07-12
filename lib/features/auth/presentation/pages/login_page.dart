@@ -59,7 +59,7 @@ class LoginPage extends ConsumerWidget {
                         label: "Entrar com Instagram",
                         color: Colors.purple[700]!,
                         textColor: Colors.white,
-                        onTap: () => _handleLogin(context, ref, 'instagram'),
+                        onTap: () => _handleInstagramLogin(context, ref),
                       ),
                       const SizedBox(height: 15),
                       _SocialLoginButton(
@@ -67,7 +67,7 @@ class LoginPage extends ConsumerWidget {
                         label: "Entrar com TikTok",
                         color: Colors.black,
                         textColor: Colors.white,
-                        onTap: () => _handleLogin(context, ref, 'tiktok'),
+                        onTap: () => _handleTikTokLogin(context, ref),
                       ),
                     ],
                   ),
@@ -95,18 +95,33 @@ class LoginPage extends ConsumerWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Falha no login: $e')),
+          SnackBar(content: Text('Falha no Google: $e')),
         );
       }
     }
   }
 
-  // Mantemos o mock apenas para os outros botões por enquanto
-  void _handleLogin(BuildContext context, WidgetRef ref, String provider) async {
-    await ref.read(authProvider.notifier).login(provider);
-    if (context.mounted) {
-      // Após o login, leva para o onboarding
-      Navigator.pushReplacementNamed(context, '/onboarding');
+  void _handleInstagramLogin(BuildContext context, WidgetRef ref) async {
+    try {
+      await ref.read(authProvider.notifier).loginWithInstagram();
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Falha no Instagram: $e')),
+        );
+      }
+    }
+  }
+
+  void _handleTikTokLogin(BuildContext context, WidgetRef ref) async {
+    try {
+      await ref.read(authProvider.notifier).loginWithTikTok();
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Falha no TikTok: $e')),
+        );
+      }
     }
   }
 }

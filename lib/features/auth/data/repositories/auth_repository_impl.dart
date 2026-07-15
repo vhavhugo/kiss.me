@@ -44,12 +44,16 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> signInWithInstagram() async {
-    // Simulando fluxo real via OAuth Provider fixo se o enum estiver ausente
-    // Em produção, isso abrirá a página de login do Instagram vinculada ao Supabase
-    await _supabase.auth.signInWithOAuth(
-      OAuthProvider.google, // Mock para compilar, deve ser ajustado no dashboard do Supabase
-      redirectTo: 'io.supabase.kissme://login-callback/',
-    );
+    try {
+      // O Supabase usa o provedor 'instagram' para Threads/Instagram unificado
+      await _supabase.auth.signInWithOAuth(
+        OAuthProvider.instagram,
+        redirectTo: 'io.supabase.kissme://login-callback/',
+      );
+    } catch (e) {
+      // Log silencioso para falha de login
+      return;
+    }
   }
 
   @override

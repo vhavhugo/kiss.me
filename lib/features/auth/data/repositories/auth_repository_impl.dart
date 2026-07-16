@@ -48,7 +48,7 @@ class AuthRepositoryImpl implements AuthRepository {
       // O Supabase usa o provedor 'instagram' para Threads/Instagram unificado
       await _supabase.auth.signInWithOAuth(
         OAuthProvider.instagram,
-        redirectTo: 'io.supabase.kissme://login-callback/',
+        redirectTo: 'https://tfjnbbybrdcmjxwlcuzw.supabase.co/auth/v1/callback',
       );
     } catch (e) {
       // Log silencioso para falha de login
@@ -61,7 +61,7 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       await _supabase.auth.signInWithOAuth(
         OAuthProvider.tiktok,
-        redirectTo: 'io.supabase.kissme://login-callback/',
+        redirectTo: 'https://tfjnbbybrdcmjxwlcuzw.supabase.co/auth/v1/callback',
       );
     } catch (e) {
       // Log silencioso para falha de login

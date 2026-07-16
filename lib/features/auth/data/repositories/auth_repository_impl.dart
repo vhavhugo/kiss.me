@@ -58,10 +58,15 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> signInWithTikTok() async {
-    await _supabase.auth.signInWithOAuth(
-      OAuthProvider.google,
-      redirectTo: 'io.supabase.kissme://login-callback/',
-    );
+    try {
+      await _supabase.auth.signInWithOAuth(
+        OAuthProvider.tiktok,
+        redirectTo: 'io.supabase.kissme://login-callback/',
+      );
+    } catch (e) {
+      // Log silencioso para falha de login
+      return;
+    }
   }
 
   @override

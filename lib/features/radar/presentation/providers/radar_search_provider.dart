@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/radar_repository.dart';
-import '../providers/radar_provider.dart'; // Assumindo que o repository provider está aqui
+import '../providers/radar_provider.dart';
 
 class RadarSearchState {
   final List<UserEntity> users;
@@ -28,12 +28,19 @@ class RadarSearchState {
   }
 }
 
-class RadarSearchNotifier extends StateNotifier<RadarSearchState> {
-  final RadarRepository _repository;
+class RadarSearchNotifier extends Notifier<RadarSearchState> {
+  late final RadarRepository _repository;
   Timer? _expansionTimer;
 
-  RadarSearchNotifier(this._repository)
-      : super(RadarSearchState(users: [], currentRadiusKm: 0.5, isSearching: false));
+  @override
+  RadarSearchState build() {
+    _repository = ref.read(radarRepositoryProvider);
+    // Não temos um super.dispose(), o Notifier limpa no ref.onDispose
+    ref.onDispose(() {
+      _expansionTimer?.cancel();
+    });
+    return RadarSearchState(users: [], currentRadiusKm: 0.5, isSearching: false);
+  }
 
   void startSearch(double lat, double lng) async {
     _expansionTimer?.cancel();
@@ -43,22 +50,18 @@ class RadarSearchNotifier extends StateNotifier<RadarSearchState> {
 
   void stopSearch() {
     _expansionTimer?.cancel();
-    state = state.copyWith(isSearching: false, users: [], currentRadiusKm: 0.0); // Zera o raio para efeito Offline
+    state = state.copyWith(isSearching: false, users: [], currentRadiusKm: 0.0);
   }
 
   void _performSearch(double lat, double lng) async {
-    // Se estiver Offline, para tudo
     if (!state.isSearching) return;
 
-    // 1. Consulta ao backend
     final users = await _repository.getNearbyUsers(lat, lng, state.currentRadiusKm);
 
     if (users.isNotEmpty) {
-      // ENCONTROU: Para a expansão e mostra os resultados
       state = state.copyWith(users: users, isSearching: false);
       _expansionTimer?.cancel();
     } else {
-      // NÃO ENCONTROU: Aumenta o raio visualmente E continua a busca
       if (state.currentRadiusKm < 50.0) {
         _expansionTimer = Timer(const Duration(seconds: 2), () {
           final nextRadius = _getNextRadius(state.currentRadiusKm);
@@ -72,19 +75,10 @@ class RadarSearchNotifier extends StateNotifier<RadarSearchState> {
   }
 
   double _getNextRadius(double current) {
-    // Incrementos garantidos para o usuário ver o KM subindo
-    if (current < 1.0) return current + 0.1; // +100m (mais suave)
-    if (current < 5.0) return current + 0.5; // +500m
-    return current + 2.0; // +2km
-  }
-
-  @override
-  void dispose() {
-    _expansionTimer?.cancel();
-    super.dispose();
+    if (current < 1.0) return current + 0.1;
+    if (current < 5.0) return current + 0.5;
+    return current + 2.0;
   }
 }
 
-final radarSearchProvider = StateNotifierProvider<RadarSearchNotifier, RadarSearchState>((ref) {
-  return RadarSearchNotifier(ref.read(radarRepositoryProvider));
-});
+final radarSearchProvider = NotifierProvider<RadarSearchNotifier, RadarSearchState>(RadarSearchNotifier.new);

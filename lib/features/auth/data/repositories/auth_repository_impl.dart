@@ -5,24 +5,30 @@ import '../../domain/repositories/auth_repository.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final SupabaseClient _supabase;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  
+  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
 
   AuthRepositoryImpl(this._supabase);
 
   @override
   Future<AuthUserEntity?> signInWithGoogle() async {
     try {
-      final googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return null;
+      // 1. Inicia o fluxo de autenticação do Google
+      final googleAccount = await _googleSignIn.authenticate();
 
-      final googleAuth = await googleUser.authentication;
-      final accessToken = googleAuth.accessToken;
-      final idToken = googleAuth.idToken;
+      // 2. Obtém o ID Token (Obrigatório para Supabase)
+      final idToken = googleAccount.authentication.idToken;
 
       if (idToken == null) {
         throw Exception('Falha ao obter ID Token do Google.');
       }
 
+      // 3. Obtém o Access Token (Opcional, mas recomendado)
+      // Na v7.2.0, o accessToken foi movido para o authorizationClient
+      final authz = await googleAccount.authorizationClient.authorizeScopes(['email']);
+      final accessToken = authz.accessToken;
+
+      // 4. Conecta com o Supabase
       final response = await _supabase.auth.signInWithIdToken(
         provider: OAuthProvider.google,
         idToken: idToken,
@@ -45,13 +51,11 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> signInWithInstagram() async {
     try {
-      // O Supabase usa o provedor 'instagram' para Threads/Instagram unificado
       await _supabase.auth.signInWithOAuth(
-        OAuthProvider.instagram,
+        const OAuthProvider('instagram'),
         redirectTo: 'https://tfjnbbybrdcmjxwlcuzw.supabase.co/auth/v1/callback',
       );
     } catch (e) {
-      // Log silencioso para falha de login
       return;
     }
   }
@@ -60,11 +64,10 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> signInWithTikTok() async {
     try {
       await _supabase.auth.signInWithOAuth(
-        OAuthProvider.tiktok,
+        const OAuthProvider('tiktok'),
         redirectTo: 'https://tfjnbbybrdcmjxwlcuzw.supabase.co/auth/v1/callback',
       );
     } catch (e) {
-      // Log silencioso para falha de login
       return;
     }
   }

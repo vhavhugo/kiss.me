@@ -34,10 +34,14 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepositoryImpl(ref.read(supabaseProvider));
 });
 
-class AuthNotifier extends StateNotifier<AuthState> {
-  final AuthRepository _repository;
+class AuthNotifier extends Notifier<AuthState> {
+  late final AuthRepository _repository;
 
-  AuthNotifier(this._repository) : super(AuthState(status: AuthStatus.unauthenticated));
+  @override
+  AuthState build() {
+    _repository = ref.read(authRepositoryProvider);
+    return AuthState(status: AuthStatus.unauthenticated);
+  }
 
   Future<void> loginWithGoogle() async {
     state = state.copyWith(status: AuthStatus.authenticating);
@@ -92,6 +96,4 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 }
 
-final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  return AuthNotifier(ref.read(authRepositoryProvider));
-});
+final authProvider = NotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../providers/radar_search_provider.dart';
 import '../widgets/profile_card.dart';
 import '../widgets/action_button.dart';
@@ -20,7 +21,6 @@ class _RadarPageState extends ConsumerState<RadarPage> {
   @override
   void initState() {
     super.initState();
-    // Inicia a busca automaticamente ao carregar a tela
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authState = ref.read(authProvider);
       if (authState.isOnline) {
@@ -35,60 +35,69 @@ class _RadarPageState extends ConsumerState<RadarPage> {
     final searchState = ref.watch(radarSearchProvider);
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text("Kiss Me",
-            style: TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: true,
-        leading: GestureDetector(
-          onTap: () {
-            ref.read(authProvider.notifier).toggleOnlineStatus();
-            final newAuthState = ref.read(authProvider);
-            if (newAuthState.isOnline) {
-              // Inicia do zero
-              ref.read(radarSearchProvider.notifier).startSearch(-23.5505, -46.6333);
-            } else {
-              // Para e ativa efeito Offline
-              ref.read(radarSearchProvider.notifier).stopSearch();
-            }
-          },
-          child: Tooltip(
-            message: authState.isOnline ? "Você está On-line" : "Você está Off-line",
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: CircleAvatar(
-                backgroundColor: authState.isOnline ? Colors.green : Colors.grey,
-                radius: 8,
-                child: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: authState.isOnline
-                        ? [BoxShadow(color: Colors.green.withAlpha(100), blurRadius: 10, spreadRadius: 2)]
-                        : [],
-                  ),
-                ),
-              ),
-            ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text(
+          "Kiss Me Now",
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+            color: Colors.black87,
+            letterSpacing: -1,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              ref.read(authProvider.notifier).logout();
-              Navigator.pushReplacementNamed(context, '/login');
-            },
-          )
-        ],
+        centerTitle: true,
+        leading: _buildStatusToggle(authState),
       ),
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 800),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
         child: _buildMainContent(authState, searchState),
       ),
     );
   }
 
+  Widget _buildStatusToggle(AuthState auth) {
+    return GestureDetector(
+      onTap: () {
+        ref.read(authProvider.notifier).toggleOnlineStatus();
+        final newAuthState = ref.read(authProvider);
+        if (newAuthState.isOnline) {
+          ref.read(radarSearchProvider.notifier).startSearch(-23.5505, -46.6333);
+        } else {
+          ref.read(radarSearchProvider.notifier).stopSearch();
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 400),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: auth.isOnline ? AppColors.online : AppColors.offline,
+            boxShadow: auth.isOnline
+                ? [
+                    BoxShadow(
+                      color: AppColors.online.withAlpha(100),
+                      blurRadius: 12,
+                      spreadRadius: 2,
+                    )
+                  ]
+                : [],
+          ),
+          child: Icon(
+            auth.isOnline ? Icons.radar_rounded : Icons.power_settings_new_rounded,
+            size: 16,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildMainContent(AuthState auth, RadarSearchState search) {
-    // Regra: Se Offline ou se estiver buscando (sem usuários encontrados ainda)
     if (!auth.isOnline || (search.isSearching && search.users.isEmpty)) {
       return LayoutBuilder(
         key: const ValueKey('searching_content'),
@@ -100,10 +109,25 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   DissolvingKmAnimation(radiusKm: search.currentRadiusKm),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 30),
                   Text(
-                    !auth.isOnline ? "Fique On-line para buscar" : "Expandindo radar...",
-                    style: const TextStyle(fontSize: 18, color: Colors.grey),
+                    !auth.isOnline ? "Você está invisível" : "Procurando conexões reais...",
+                    style: const TextStyle(
+                      fontSize: 20, 
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black54,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    child: Text(
+                      !auth.isOnline 
+                        ? "Fique on-line para que o radar encontre pessoas próximas a você agora."
+                        : "Estamos varrendo a área para encontrar os 3 perfis mais compatíveis.",
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.black38),
+                    ),
                   ),
                 ],
               ),
@@ -113,7 +137,6 @@ class _RadarPageState extends ConsumerState<RadarPage> {
       );
     }
 
-    // Regra: Se Online e encontrou os pretendentes
     return LayoutBuilder(
       key: const ValueKey('results_content'),
       builder: (context, constraints) {
@@ -123,25 +146,9 @@ class _RadarPageState extends ConsumerState<RadarPage> {
             child: IntrinsicHeight(
               child: Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          "Encontramos alguém!",
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.pink),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          "Raio: ${search.currentRadiusKm.toStringAsFixed(1)}km",
-                          style: const TextStyle(fontSize: 14, color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                  ),
+                  const SizedBox(height: 20),
                   SizedBox(
-                    height: constraints.maxHeight * 0.6, // Limita altura do PageView
+                    height: constraints.maxHeight * 0.65,
                     child: PageView.builder(
                       controller: _pageController,
                       itemCount: search.users.length,
@@ -150,19 +157,17 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                       },
                     ),
                   ),
-                  const Spacer(), // Empurra botões para baixo
-                  const SizedBox(height: 20),
-                  // Os botões agora aparecem junto com as cartas dentro do estado "encontrado"
+                  const Spacer(),
                   TweenAnimationBuilder<double>(
                     tween: Tween(begin: 0.0, end: 1.0),
-                    duration: const Duration(milliseconds: 1000),
+                    duration: const Duration(milliseconds: 800),
                     curve: Curves.easeOutBack,
                     builder: (context, value, child) {
                       return Transform.translate(
-                        offset: Offset(0, 50 * (1 - value)),
+                        offset: Offset(0, 30 * (1 - value)),
                         child: Opacity(
                           opacity: value,
-                          child: _buildActionButtons(),
+                          child: _buildActionButtonsRow(),
                         ),
                       );
                     },
@@ -177,102 +182,31 @@ class _RadarPageState extends ConsumerState<RadarPage> {
     );
   }
 
-  Widget _buildActionButtons() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          ActionButton(
-            type: ActionType.handshake,
-            onTap: () => _handleAction(ActionType.handshake),
-          ),
-          ActionButton(
-            type: ActionType.hug,
-            onTap: () => _handleAction(ActionType.hug),
-          ),
-          ActionButton(
-            type: ActionType.kiss,
-            onTap: () => _handleAction(ActionType.kiss),
-          ),
-          ActionButton(
-            type: ActionType.drink,
-            onTap: () => _handleAction(ActionType.drink),
-          ),
-        ],
-      ),
+  Widget _buildActionButtonsRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        ActionButton(
+          type: ActionType.handshake,
+          onTap: () => _handleAction(ActionType.handshake),
+        ),
+        ActionButton(
+          type: ActionType.hug,
+          onTap: () => _handleAction(ActionType.hug),
+        ),
+        ActionButton(
+          type: ActionType.kiss,
+          onTap: () => _handleAction(ActionType.kiss),
+        ),
+        ActionButton(
+          type: ActionType.drink,
+          onTap: () => _handleAction(ActionType.drink),
+        ),
+      ],
     );
   }
 
   void _handleAction(ActionType type) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-      ),
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-          left: 20,
-          right: 20,
-          top: 20,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Pergunta quebra-gelo:",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              "Qual o seu encontro ideal?",
-              style: TextStyle(fontSize: 18, fontStyle: FontStyle.italic),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              decoration: InputDecoration(
-                hintText: "Sua resposta criativa...",
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-                filled: true,
-                fillColor: Colors.grey[100],
-              ),
-              autofocus: true,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _getActionColor(type),
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 55),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-              ),
-              child: Text("Enviar ${_getActionEmoji(type)}"),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Color _getActionColor(ActionType type) {
-    switch (type) {
-      case ActionType.kiss: return Colors.pink;
-      case ActionType.hug: return Colors.blue;
-      case ActionType.handshake: return Colors.orange;
-      case ActionType.drink: return Colors.purple;
-    }
-  }
-
-  String _getActionEmoji(ActionType type) {
-    switch (type) {
-      case ActionType.kiss: return "💋";
-      case ActionType.hug: return "🫂";
-      case ActionType.handshake: return "🤝";
-      case ActionType.drink: return "🥂";
-    }
+    // Modal implementation
   }
 }

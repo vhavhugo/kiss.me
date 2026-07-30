@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'core/theme/app_colors.dart';
 import 'features/auth/presentation/pages/login_page.dart';
-import 'features/radar/presentation/pages/radar_page.dart';
+import 'features/main_navigation/presentation/pages/main_navigation_page.dart';
 import 'features/onboarding/presentation/pages/onboarding_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Inicializa o Supabase antes de rodar o app
   await Supabase.initialize(
     url: 'https://tfjnbbybrdcmjxwlcuzw.supabase.co/rest/v1/',
     anonKey: 'sb_publishable_VK51tv5QTgZZbWce8dnCSQ_5Jxoc8hA',
@@ -30,19 +30,19 @@ class KissMeApp extends StatelessWidget {
       title: 'Kiss Me',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.pink,
-          primary: Colors.pink,
-        ),
         useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColors.primary,
+          primary: AppColors.primary,
+          surface: AppColors.background,
+        ),
         fontFamily: 'Roboto',
       ),
-      // A primeira tela agora é a LoginPage
       home: const LoginPage(),
       routes: {
         '/login': (context) => const LoginPage(),
         '/onboarding': (context) => const OnboardingPage(),
-        '/radar': (context) => const RadarPage(),
+        '/main': (context) => const MainNavigationPage(),
       },
     );
   }

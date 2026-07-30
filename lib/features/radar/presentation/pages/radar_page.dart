@@ -8,7 +8,7 @@ import '../widgets/action_button.dart';
 import '../widgets/dissolving_km_animation.dart';
 import '../../domain/entities/interaction_entity.dart';
 
-import '../widgets/ai_ethics_panel.dart';
+import '../widgets/ai_trust_system.dart';
 
 class RadarPage extends ConsumerStatefulWidget {
   const RadarPage({super.key});
@@ -112,7 +112,11 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                 children: [
                   const DissolvingKmAnimation(radiusKm: 0.0),
                   const SizedBox(height: 30),
-                  const AiEthicsPanel(), // Transparência Global (Meske, 2022)
+                  // Sistema de Confiança Híbrido: Combina Local e Global (Alam, 2021)
+                  const AiTrustSystem(
+                    localJustification: "Fique on-line para que nossa tecnologia encontre afinidades baseadas em seus interesses reais.",
+                    score: 0.0,
+                  ),
                   const SizedBox(height: 30),
                   Text(
                     !auth.isOnline ? "Você está invisível" : "Procurando conexões reais...",

@@ -10,6 +10,7 @@ import '../../domain/entities/interaction_entity.dart';
 
 import '../widgets/ai_trust_system.dart';
 import '../../../../features/privacy/presentation/widgets/privacy_safe_indicator.dart';
+import '../../../../features/gamification/presentation/widgets/gamification_progress_bar.dart';
 
 class RadarPage extends ConsumerStatefulWidget {
   const RadarPage({super.key});
@@ -119,7 +120,16 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                     score: 0.0,
                   ),
                   const SizedBox(height: 10),
-                  const PrivacySafeIndicator(), // Blindagem contra datificação (Gao, 2025)
+                  const PrivacySafeIndicator(),
+                  const SizedBox(height: 20),
+                  // Gamificação: Barra de Progresso de Conquista (Feng, 2020)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 40),
+                    child: GamificationProgressBar(
+                      progress: 0.65,
+                      label: "NÍVEL DE INTENCIONALIDADE",
+                    ),
+                  ),
                   const SizedBox(height: 30),
                   Text(
                     !auth.isOnline ? "Você está invisível" : "Procurando conexões reais...",

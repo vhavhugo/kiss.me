@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/ads/banner_ad_widget.dart';
 import '../../../radar/presentation/pages/radar_page.dart';
 
 class MainNavigationPage extends ConsumerStatefulWidget {
@@ -11,21 +12,29 @@ class MainNavigationPage extends ConsumerStatefulWidget {
 }
 
 class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
-  int _selectedIndex = 1; // Começa no Radar (Kiss Me Now)
+  int _selectedIndex = 1;
 
   final List<Widget> _pages = [
     const Center(child: Text("Perfil")), 
     const RadarPage(),
     const Center(child: Text("Conversas")), 
-    const Center(child: Text("Premium")),
+    const Center(child: Text("Configurações")), 
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
+      body: Column(
+        children: [
+          Expanded(
+            child: IndexedStack(
+              index: _selectedIndex,
+              children: _pages,
+            ),
+          ),
+          // Monetização 100% Grátis: Banner de propaganda sempre visível na base
+          const BannerAdWidget(),
+        ],
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -63,9 +72,9 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
               label: 'Chats',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.stars_outlined),
-              activeIcon: Icon(Icons.stars_rounded),
-              label: 'Premium',
+              icon: Icon(Icons.settings_outlined),
+              activeIcon: Icon(Icons.settings_rounded),
+              label: 'Ajustes',
             ),
           ],
         ),

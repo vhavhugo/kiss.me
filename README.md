@@ -100,3 +100,29 @@ A explicabilidade influencia diretamente a confiança e pode mitigar o viés e a
 
 ### Desafios e Direções Futuras
 Os principais desafios incluem o equilíbrio entre precisão e interpretabilidade, além de problemas de escalabilidade e ética (Paliwal, 2025). A complexidade dos sistemas pode dificultar a compreensão da lógica inerente pelos usuários, impactando a adoção em cenários de alto risco (Meske, 2022). Direções futuras apontam para estruturas específicas de domínio e métricas de avaliação padronizadas (Paliwal, 2025).
+
+---
+
+## Efeitos das Explicações Locais e Globais na Confiança do Usuário
+
+Explicações locais geram confiança imediata no processo de busca de parceiros, enquanto explicações globais promovem a compreensão geral do sistema; combinar ambas parece ser a opção mais eficaz.
+
+### Diferenciação de Impacto
+- **Explicações Locais**: Justificam correspondências individuais e previnem a queda de confiança de forma mais eficaz em momentos críticos. São mais precisas e menos complexas (Alam, 2021; Radensky, 2021).
+- **Explicações Globais**: Descrevem a lógica algorítmica geral e são essenciais para a compreensão posterior do sistema (Alam, 2021).
+- **Abordagem Combinada**: Resulta no melhor desempenho do usuário na avaliação de agentes de IA e na identificação de como melhorar as recomendações (Radensky, 2021).
+
+### Efeitos Comparativos na Confiança e na Compreensão
+
+| Tipo de explicação | Impacto da confiança | Entendendo o impacto |
+| :--- | :--- | :--- |
+| **Local** | Impede a queda de confiança durante erros; mais alarmante para modelos injustos. | Preferido por iniciantes; melhor para uma análise justa de cada caso. |
+| **Global** | Menos eficaz para gerar confiança imediata; melhora a compreensão posterior. | Considerado mais útil para a compreensão geral do modelo. |
+| **Combinado** | Ambos ajudam a estabelecer a confiança adequada. | Ideal para explicar como melhorar as recomendações. |
+
+### Contexto de Encontros e Retenção
+- O uso excessivo de aplicativos de namoro e a fadiga decisória levam os usuários a usar a confiança algorítmica como estratégia de alívio (Binder, 2024).
+*   A percepção de justiça e presença social da IA eleva a eficácia percebida do sistema de matchmaking (Paul, 2023).
+*   Na ausência de explicações, os usuários aplicam seus próprios modelos mentais, confiando no sistema se a experiência for positiva (Manresa-Yee, 2023).
+*   As decisões humanas são as mais confiáveis, seguidas por explicações de IA em linguagem simples; explicações técnicas são as menos confiáveis (Tehreem, 2025).
+*   Evidências sugerem que o aumento da confiança gera experiências positivas, incentivando o engajamento contínuo com o aplicativo (Binder, 2024).

@@ -9,6 +9,7 @@ import '../widgets/dissolving_km_animation.dart';
 import '../../domain/entities/interaction_entity.dart';
 
 import '../widgets/ai_trust_system.dart';
+import '../../../../features/privacy/presentation/widgets/privacy_safe_indicator.dart';
 
 class RadarPage extends ConsumerStatefulWidget {
   const RadarPage({super.key});
@@ -117,6 +118,8 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                     localJustification: "Fique on-line para que nossa tecnologia encontre afinidades baseadas em seus interesses reais.",
                     score: 0.0,
                   ),
+                  const SizedBox(height: 10),
+                  const PrivacySafeIndicator(), // Blindagem contra datificação (Gao, 2025)
                   const SizedBox(height: 30),
                   Text(
                     !auth.isOnline ? "Você está invisível" : "Procurando conexões reais...",

@@ -68,3 +68,35 @@ A transparência nos algoritmos de combinação de parceiros pode tanto construi
 
 ### Conclusão Geral
 A transparência nos sistemas de matchmaking é uma **faca de dois gumes**: pode aumentar a percepção de justiça e a eficácia algorítmica quando as explicações são claras, contextuais e equilibradas, mas a transparência excessiva ou puramente técnica mina a confiança, especialmente quando revela preconceitos ou sobrecarrega a capacidade cognitiva.
+
+---
+
+## Inteligência Artificial Explicável (XAI) para Aplicativos de Encontros
+
+A Inteligência Artificial Explicável (XAI) visa produzir modelos transparentes que permitam aos usuários compreender, confiar e gerenciar sistemas de IA de forma eficaz (Meske, 2022). No contexto das plataformas de encontros, a XAI aborda a natureza "caixa preta" dos algoritmos de combinação, fornecendo explicações compreensíveis sobre como as recomendações e as combinações são geradas (Ridley, 2022; Thalpage, 2023).
+
+### Princípios básicos de XAI para matchmaking
+- **Transparência**: É a capacidade de um sistema de IA fornecer explicações compreensíveis e razoáveis sobre seu processo de decisão ou previsão (Mersha, 2024).
+- **Lógica Interpretável**: Os sistemas XAI explicam como os modelos chegam às previsões para que os usuários possam entender a lógica por trás do sistema, o que é crucial para a confiabilidade.
+- **Multifacetada**: A necessidade de explicabilidade é essencial para garantir o desempenho e a confiabilidade do modelo, permitindo que os usuários trabalhem de forma eficaz com esses sistemas.
+
+### Dimensões da XAI e sua aplicação
+
+| Dimensão XAI | Candidatura a aplicativos de namoro | Referência |
+| :--- | :--- | :--- |
+| Transparência | Fornecer explicações compreensíveis sobre como as previsões de partidas são geradas. | Mersha, 2024 |
+| Confiabilidade | Aumentando a confiança do usuário por meio de lógica de correspondência interpretável. | Mersha, 2024; Thalpage, 2023 |
+| Responsabilidade | Permitir a análise minuciosa das decisões algorítmicas quanto a viés e imparcialidade. | Meske, 2022; Ridley, 2022 |
+| Design centrado no usuário | Capacitando os usuários a avaliar e gerenciar o processo de matchmaking orientado por IA. | Meske, 2022 |
+
+### Técnicas e abordagens de design
+Diversas técnicas de XAI podem promover a interpretabilidade em sistemas de matchmaking, como mapas de saliência, mecanismos de atenção e explicações baseadas em regras (Thalpage, 2023). Uma teoria de design emergente inclui:
+- **Explicabilidade Global**: Compreensão geral de como o algoritmo se comporta para todos os usuários (Meske, 2022).
+- **Explicabilidade Local**: Razões específicas para recomendações de correspondência individuais.
+- **Interfaces Personalizadas**: Adaptação dos estilos de explicação a diferentes grupos de usuários.
+
+### Confiança, equidade e considerações éticas
+A explicabilidade influencia diretamente a confiança e pode mitigar o viés e a discriminação (Meske, 2022). Isso é vital em aplicativos de namoro para demonstrar que as práticas de correspondência são justas (Paliwal, 2025). Com a introdução do RGPD, a explicabilidade tornou-se uma questão de política pública e transparência necessária para a compreensão das consequências da IA (Ridley, 2022).
+
+### Desafios e Direções Futuras
+Os principais desafios incluem o equilíbrio entre precisão e interpretabilidade, além de problemas de escalabilidade e ética (Paliwal, 2025). A complexidade dos sistemas pode dificultar a compreensão da lógica inerente pelos usuários, impactando a adoção em cenários de alto risco (Meske, 2022). Direções futuras apontam para estruturas específicas de domínio e métricas de avaliação padronizadas (Paliwal, 2025).

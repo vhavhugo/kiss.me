@@ -8,84 +8,84 @@ Kiss Me é um aplicativo de relacionamentos de próxima geração, focado em **h
 
 ## 🔬 Fundamentação Teórica e Pesquisa Acadêmica
 
-Este projeto é baseado em uma síntese abrangente de literatura científica (IHC, Sistemas Sociais Computacionais e Sociologia Cultural). 
+Este projeto é baseado em uma síntese abrangente de literatura científica, design e tecnologia, garantindo a validade das escolhas de produto.
 
-### 🔍 Estratégia de Busca Acadêmica
-Para garantir a validade das escolhas de design, IA e segurança, foi utilizada a seguinte string de busca em bases como *Consensus, Semantic Scholar e PubMed*:
+### 🔍 Estratégias de Busca Utilizadas
 
+Para consolidar esta arquitetura, foram utilizadas as seguintes strings de busca em bases como *Consensus, Semantic Scholar, PubMed, GitHub e TechBlogs*:
+
+#### 🎨 Foco em Design, Cores e Experiência do Usuário
+> `"dating app" AND (layout OR wireframe) AND ("color palette" OR "dark mode") AND "user experience"`
+>
+> `"aplicativo de namoro" AND (design de interface OR UX) AND (psicologia das cores OR acessibilidade)`
+
+#### 🛠️ Foco em Arquitetura Tecnológica e Recursos de IA
+> `"dating platform" AND ("tech stack" OR backend) AND ("geolocation API" OR "real-time chat") AND ("matching algorithm" OR LLM)`
+>
+> `"aplicativo de relacionamento" AND (segurança OR "verificação por foto") AND (arquitetura OR escalabilidade OR "banco de dados")`
+
+#### 🔬 Pesquisa Completa e Avançada (Combinação Total)
 > `("dating app" OR "dating platform") AND (UI OR UX OR "visual design") AND (colors OR branding) AND (AI OR "machine learning") AND (security OR privacy)`
 
 ---
 
 ## 1. IA e Retenção de Usuários
-
-As evidências sobre se algoritmos de IA melhoram a retenção são indiretas. O engajamento é mantido pela **percepção de eficácia** e confiança no sistema.
-
+As evidências são contraditórias sobre se o sistema de busca de pares baseado em inteligência artificial melhora a retenção de usuários. A literatura sugere que:
 - **Confiança Algorítmica**: A percepção de justiça da IA está ligada à crença na eficácia do matchmaking (Paul, 2023).
-- **Fadiga Decisória**: O uso excessivo de swipe leva os usuários a recorrerem a algoritmos como estratégia de alívio para comportamentos compulsivos (Binder, 2024).
-- **Eficácia vs. Realidade**: Algoritmos preveem interesse mútuo com 85-94% de precisão (Guo, 2025), mas a compatibilidade a longo prazo só é perceptível após o encontro offline (Sharabi, 2020).
-
----
+- **Fadiga Decisória**: O uso excessivo de swipe leva os usuários a recorrerem a algoritmos como alívio para comportamentos compulsivos (Binder, 2024).
+- **Eficácia vs. Realidade**: Modelos de ML preveem interesse mútuo com 85-94% de precisão (Guo, 2025), mas a compatibilidade real só é percebida offline (Sharabi, 2020).
 
 ## 2. Transparência e Explicabilidade (XAI)
-
-A transparência é uma "faca de dois gumes": deve ser clara e contextual para não sobrecarregar o usuário.
+A transparência nos algoritmos de combinação pode construir ou corroer a confiança dependendo do estilo da explicação:
+- **Explicações Locais**: Justificam correspondências individuais, prevenindo queda de confiança em momentos críticos.
+- **Explicações Globais**: Promovem a compreensão geral do sistema e sua lógica.
+- **Efeito de Sobrecarga**: O excesso de transparência técnica pode confundir; o ideal são explicações contextuais em linguagem simples (Sunny, 2025).
 
 | Tipo de Explicação | Impacto na Confiança | Aplicação no Kiss Me |
 | :--- | :--- | :--- |
-| **Local** | Previne queda de confiança em momentos críticos. | Justificar por que *esta* pessoa está no seu radar agora. |
-| **Global** | Promove compreensão geral do sistema. | Tutorial e FAQ sobre o funcionamento do radar. |
-| **Combinado** | Ideal para estabelecer confiança adequada. | Transição fluida entre a busca de KM e a exibição do perfil. |
-
----
+| **Local** | Impede a queda de confiança durante erros. | Justificar o radar instantâneo. |
+| **Global** | Melhora a compreensão posterior do modelo. | FAQ e Tutorial do Radar. |
+| **Combinado** | Ideal para estabelecer confiança adequada. | Transição entre busca e perfil. |
 
 ## 3. UX Algorítmica, Branding e Cores
+A cor é o elemento mais intuitivo e emocional no design de interfaces (Jiang, 2024).
+- **Psicologia das Cores**: Tons quentes transmitem calor e suavidade; laranja é preferido por 60,2% dos usuários (Liu, 2024).
+- **Saturação e Fadiga**: Fundos com baixa saturação reduzem a fadiga ocular e aceleram tarefas de busca visual (Deng, 2022).
+- **Autenticidade**: O estilo visual deve refletir a personalidade para uma apresentação autêntica da "marca pessoal" (Lestari, 2024).
 
-A interface do Kiss Me foi projetada para minimizar a fricção cognitiva e maximizar a ressonância emocional.
+## 4. Gamificação e Mecânicas de Jogo
+O Kiss Me substitui o "Baralho Infinito" (caça-níquel) por um modelo finito de 3 opções:
+- **Recompensa Variável**: O match intermitente alimenta o uso compulsivo (Zytko, 2018).
+- **Inércia Social**: 80% dos usuários reconhecem táticas de manipulação, mas sua eficácia não diminui (Akbar, 2026).
+- **O Jogo das 3 Cartas**: Reduz a paralisia de análise e aumenta a qualidade das interações.
 
-### 🎨 Psicologia das Cores
-- **Tons Quentes**: Transmitem calor e suavidade (preferidos por 60,2% dos usuários - Liu, 2024).
-- **Baixa Saturação**: Reduz a fadiga ocular e melhora o desempenho de busca visual (Deng, 2022).
-- **Alta Luminosidade**: Transmite emoções puras e limpas.
-
-### 🎮 Gamificação e Recompensas
-O Kiss Me substitui o "Baralho Infinito" (tipo Slot Machine) por uma mesa de **3 Cartas**, combatendo o uso compulsivo e a despersonalização dos vínculos humanos (Nader, 2024; Zytko, 2018).
-
----
-
-## 4. Segurança e Privacidade
-
-Segurança é a prioridade #1. A integração de IA no Kiss Me foca em:
-- **Verificação de Perfil**: Uso de visão computacional para combater o engano visual da IA generativa (Barkallah, 2026).
-- **Detecção de Maliciosos**: Modelos de confiança que analisam comportamentos para prevenir danos online-to-offline (Shen, 2023).
-- **Processamento On-Device**: Foco em privacidade para dados sensíveis.
+## 5. Segurança e Privacidade
+A segurança é a prioridade #1. A integração de IA no Kiss Me foca em:
+- **Detecção de Maliciosos**: Modelos que analisam integridade de informação superam métodos tradicionais em 8% de precisão (Shen, 2023).
+- **Design Participativo**: Foco em estratégias de segurança para mulheres (Datey, 2024).
+- **Processamento On-Device**: Uso de visão computacional afetiva sem criar infraestrutura de vigilância (Kandala, 2026).
 
 ---
 
 ## 💰 Estratégia de Monetização
-
-O Kiss Me utiliza um modelo de **Valor Percebido**, onde o gasto deve parecer uma escolha racional e recompensadora.
-
-- **Curiosidade Imediata**: Microtransações para revelação de interações.
-- **Assinaturas em Nível**: Desbloqueio de filtros avançados e visibilidade.
-- **Justiça Percebida**: Evitar monetização agressiva que corrói a confiança do usuário (Salehudin, 2022).
+- **Curiosidade Emocional**: Microtransações para revelação imediata de curtidas (Pettersen, 2023).
+- **Valor Percebido**: O gasto deve parecer uma escolha racional para potencializar a conexão (Runge, 2022).
+- **Níveis de Assinatura**: Uso de recursos como "prioridade" e "geolocalização expandida" de forma equilibrada.
 
 ---
 
 ## 🛠️ Stack Tecnológico
-
 - **Frontend**: Flutter (Dart) - Clean Architecture.
 - **Backend**: Supabase (PostgreSQL + PostGIS).
-- **Cache de Localização**: Redis (Upstash) - Comandos GEO para alta performance.
+- **Cache de Localização**: Redis (Upstash) - Comandos GEO para performance extrema.
 - **IA**: Gemini/OpenAI para moderação e icebreakers.
 
 ---
 
 ## 🚀 Como Executar o Projeto
-
 1. Clone o repositório.
 2. Certifique-se de que o Flutter 3.44+ está instalado.
-3. Configure as chaves no arquivo `.env` (Redis, Supabase, Google/Instagram API).
+3. Configure as chaves no arquivo `.env`.
 4. Execute `flutter pub get`.
 5. Execute `flutter run`.
 

@@ -31,3 +31,40 @@ A literatura é em grande parte **indireta**: nenhum estudo mede diretamente a r
 
 ### Conclusão
 Nenhum estudo testa diretamente se o matchmaking baseado em IA melhora a retenção de usuários, e as evidências sobre os resultados imediatos são contraditórias. Os algoritmos parecem manter o engajamento por meio da percepção de eficácia e confiança, em vez de uma superioridade comprovada no matchmaking, enquanto vieses inerentes à plataforma e o esgotamento dos usuários podem neutralizar os ganhos de retenção.
+
+---
+
+## Transparência Algorítmica e Confiança do Usuário em Sistemas de Encontros
+
+A transparência nos algoritmos de combinação de parceiros pode tanto construir quanto corroer a confiança do usuário, dependendo do estilo da explicação, da carga cognitiva e da percepção de justiça.
+
+### Percepção e Eficácia
+- A percepção de imparcialidade da IA está positivamente associada à percepção de eficácia dos algoritmos de combinação de parceiros (Paul, 2023).
+- Usuários que percebem a IA como justa e socialmente presente são mais propensos a acreditar na eficácia algorítmica.
+- O sucesso anterior no início de relacionamentos por meio de encontros online reforça ainda mais a crença em algoritmos de compatibilidade.
+- O fato de os algoritmos realmente funcionarem importa menos do que a percepção dos usuários sobre sua eficácia (Sharabi, 2020).
+
+### Efeitos da Transparência na Confiança
+- A transparência pode ter um impacto negativo na confiança em sistemas de IA (Schmidt, 2020).
+- Fornecer informações em excesso mina a confiança (Kizilcec, 2016).
+- Paradoxalmente, o excesso de transparência pode corroer a confiança ("sobrecarga de transparência" - Čvokić, 2025).
+- A **opacidade estratégica** — a limitação deliberada de certos tipos de divulgação algorítmica — pode preservar melhor a confiança em contextos específicos.
+- Explicações contextuais que conectem os resultados algorítmicos à tomada de decisões no mundo real são extremamente necessárias (Sunny, 2025).
+
+### Estilo de Explicação e Percepção de Imparcialidade
+
+| Fator | Achado | Referência |
+| :--- | :--- | :--- |
+| Tipo de explicação | Decisões humanas são as mais confiáveis, seguidas por linguagem simples; explicações técnicas são as menos confiáveis. | Tehreem, 2025 |
+| Mediação de equidade | A percepção de justiça regula a confiança; usuários de baixa renda são mais sensíveis. | Tehreem, 2025 |
+| Dependência do resultado | Explicações melhoram a justiça percebida, mas dependem do resultado do sistema. | Shulner-Tal, 2022 |
+| Discriminação direta | Transparência que revela discriminação direta deteriora a confiança. | Ebrahimi, 2024 |
+| Discriminação indireta | Recomendações baseadas em variáveis neutras não impactam a confiança da mesma forma. | Ebrahimi, 2024 |
+
+### Fatores de Confiança em Contextos de Namoro
+- O uso excessivo de aplicativos de deslizar e a fadiga decisória estão positivamente relacionados à confiança em algoritmos (estratégia de alívio - Binder, 2024).
+- Usuários desenvolvem "**imaginários algorítmicos**" — percepções de como os algoritmos funcionam — que moldam suas experiências de namoro (Pidoux, 2022).
+- Algoritmos de aplicativos de namoro são protegidos por sigilo comercial, dificultando a responsabilização algorítmica.
+
+### Conclusão Geral
+A transparência nos sistemas de matchmaking é uma **faca de dois gumes**: pode aumentar a percepção de justiça e a eficácia algorítmica quando as explicações são claras, contextuais e equilibradas, mas a transparência excessiva ou puramente técnica mina a confiança, especialmente quando revela preconceitos ou sobrecarrega a capacidade cognitiva.

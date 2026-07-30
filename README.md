@@ -127,29 +127,61 @@ Explicações locais geram confiança imediata no processo de busca de parceiros
 *   As decisões humanas são as mais confiáveis, seguidas por explicações de IA em linguagem simples; explicações técnicas são as menos confiáveis (Tehreem, 2025).
 *   Evidências sugerem que o aumento da confiança gera experiências positivas, incentivando o engajamento contínuo com o aplicativo (Binder, 2024).
 
+## Experiência do Usuário Algorítmica, Branding e Privacidade em Plataformas de Namoro baseadas em IA
+
+A integração da inteligência artificial em plataformas de encontros abrange a apresentação visual pessoal, a combinação algorítmica e a detecção de segurança, remodelando fundamentalmente a experiência do usuário (UX) e o design da interface (Rodrigues, 2026; Ünlü, 2024). À medida que as plataformas adotam a personalização orientada por IA para combater o declínio do engajamento do usuário, elas implementam interfaces gráficas de usuário (GUI) complexas e lógicas de marca que mediam a intimidade (Pidoux, 2022; Bandinelli, 2022).
+
+### O design de interface do usuário baseado em IA melhora a segurança e a privacidade em plataformas de namoro?
+
+#### Medidor de Consenso
+As evidências sugerem que, embora a IA aprimore a eficiência da interface e a personalização, ela simultaneamente exacerba os riscos à privacidade e exige estruturas robustas de design ético (Ünlü, 2024; Feferbaum, 2025).
+
 ---
 
-## Experiência do Usuário Algorítmica, Branding e Privacidade
+### 1. Introdução
+Esta síntese examina a interseção entre design de UI/UX, mecanismos de IA e preocupações com privacidade/segurança. A análise baseou-se em mais de 170 milhões de artigos científicos (Semantic Scholar, PubMed, etc.), dos quais 15 artigos de alta relevância foram selecionados para formar a base desta análise, abrangendo IHC, sistemas sociais computacionais e sociologia cultural.
 
-A integração da IA em plataformas de encontros remodela fundamentalmente o design de interface e a experiência do usuário (UX), abrangendo desde a apresentação visual até a segurança (Rodrigues, 2026; Ünlü, 2024).
+As plataformas aproveitam a personalização orientada por IA para aprimorar o engajamento, utilizando design adaptativo e análise preditiva. No entanto, o design visual e as estruturas de GUI categóricas influenciam a forma como os usuários se classificam, servindo aos algoritmos para recomendar perfis em um ecossistema de "amor mercantilizado" (Bandinelli, 2022).
 
-### Intersecção entre Personalização e Desafios Éticos
-- **Engajamento vs. Privacidade**: A personalização orientada por IA aumenta o engajamento através de design adaptativo, mas introduz vulnerabilidades de privacidade e dilemas éticos (Ünlü, 2024).
-- **Mercantilização da Intimidade**: Apps de namoro articulam identidades de marca que transformam o amor em algo mercantilizado, exigindo que os usuários avaliem constantemente a autenticidade (Bandinelli, 2022).
-- **Imaginários Algorítmicos**: Os usuários aprendem a navegar e, por vezes, manipular as estruturas da interface (GUI) para servir aos seus próprios interesses frente à lógica do aplicativo (Pidoux, 2022).
+### 2. Métodos
+A estratégia de busca empregou uma abordagem multigrupo para capturar a interseção entre aplicativos de namoro, design de UI/UX, IA e segurança. Focou-se em teorias fundamentais de design visual, psicologia das cores, estratégias de branding, IA explicável e IHC, além de explorar conceitos como confiança, consentimento e autonomia do usuário.
 
-### Engano Visual e Ameaças à Segurança
-| Fator | Impacto e Achados | Referência |
+### 3. Resultados
+
+#### 3.1 Artigos Principais e Fundamentação
+- **Bandinelli & Gandini (2022)**: Estabelecem o arcabouço dos aplicativos como intimidade mercantilizada.
+- **Binder et al. (2024)**: Fornecem evidências sobre como a confiança algorítmica alivia a fadiga decisória.
+- **Datey & Zytko (2024)**: Contribuem com estudos sobre design participativo de IA para detecção de riscos.
+- **Ivan (2025)**: Analisa o engano visual e a dificuldade de detecção de imagens geradas por IA.
+- **Barkallah et al. (2026)**: Explora a autopresentação fabricada e implicações no consentimento informado.
+
+#### 3.2 Confiança Algorítmica e Personalização
+As empresas implementam sistemas de recomendação algorítmica (ARM) para reduzir o cansaço causado pelo excesso de opções (Hu, 2023). Os usuários integram essa lógica ao cotidiano, aprendendo a manipular o aplicativo, enquanto a confiança nos algoritmos funciona como uma estratégia de alívio para comportamentos compulsivos (Binder, 2024). Contudo, persistem dúvidas sobre a precisão e vieses de gênero e raciais.
+
+#### 3.3 Engano Visual, Marca e Ameaças à Segurança
+A IA generativa permite criar personalidades atraentes sem relação com a identidade real, o que desinforma sobre o consentimento para interações íntimas (Barkallah, 2026). Usuários têm dificuldade em detectar fotos sintéticas, com precisão abaixo do acaso (Ivan, 2025). Além disso, a coleta de dados para publicidade direcionada e padrões obscuros levantam questões sobre a autonomia do usuário (Abisono, 2024).
+
+#### 3.4 Intervenções de Segurança Orientadas por IA
+Modelos de detecção baseados em confiança alcançam até 59% de precisão e 73% de recall na identificação de usuários maliciosos (Shen, 2023). Abordagens de identificação precoce usando TIME e LDA superam modelos tradicionais em 8% de precisão (Qiu, 2019). Ferramentas de visão computacional afetiva (detecção facial e de olhar) são propostas para segurança, com ênfase em processamento no dispositivo para preservar a privacidade (Kandala, 2026).
+
+### 4. Discussão
+A literatura revela uma tensão entre personalização e segurança. Enquanto a IA aprimora a eficiência, introduz novas vulnerabilidades. A rápida evolução da IA generativa supera as capacidades humanas de detecção. Defende-se um design tecnológico responsável que priorize o bem-estar e a transparência, indo além de soluções puramente técnicas.
+
+| Alegação | Força da Evidência | Raciocínio |
 | :--- | :--- | :--- |
-| **Personalidade Fabricada** | A IA generativa permite criar perfis atraentes sem relação com a identidade real, comprometendo o consentimento informado. | Barkallah, 2026 |
-| **Detecção de Fotos Sintéticas** | Usuários têm dificuldade em detectar imagens geradas por IA, com precisão muitas vezes abaixo do acaso. | Ivan, 2025 |
-| **Padrões Obscuros** | O uso de publicidade direcionada e design manipulativo levanta questões sobre a autonomia do usuário. | Abisono, 2024 |
+| Personalização aumenta engajamento mas gera riscos de privacidade | Moderado | Apoiado por estudos de design adaptativo e ética. |
+| IA generativa facilita engano visual e compromete consentimento | Forte | Evidências empíricas robustas em experimentos. |
+| Modelos de detecção baseados em confiança são eficazes | Moderado | Melhoria significativa sobre linhas de base. |
+| Confiança algorítmica alivia a fadiga decisória | Moderado | Estudo longitudinal fornece evidências. |
 
-### Intervenções de Segurança Orientadas por IA
-Para combater danos que transitam do ambiente online para o offline, novas estruturas de IA são propostas:
-- **Detecção de Maliciosos**: Modelos que analisam integridade de informação e conteúdo de conversas superam algoritmos tradicionais em até 8% de precisão (Qiu, 2019; Shen, 2023).
-- **Design Participativo**: Envolver mulheres na idealização de IAs assistentes para detecção de riscos subjetivos de segurança (Datey, 2024).
-- **Visão Computacional Afetiva**: Propostas de detecção facial e de olhar processadas no dispositivo para evitar vigilância de massa (Kandala, 2026).
+### 5. Conclusão e Futuro
+A integração da IA representa uma faca de dois gumes. Embora as intervenções de segurança sejam promissoras, sua eficácia depende de um design centrado no usuário. 
 
-### Conclusão e Futuro
-A IA em plataformas de encontros é uma **faca de dois gumes**: aprimora a eficiência e personalização, mas exige paradigmas de UI/UX que mitiguem a ilusão visual e preservem a autonomia e a privacidade do usuário a longo prazo. Estudos longitudinais e estruturas éticas são cruciais para garantir que a tecnologia seja não apenas envolvente, mas segura.
+#### Lacunas na Pesquisa
+- Compreensão do impacto de longo prazo na autonomia e privacidade.
+- Estruturas de design para mitigar a ilusão visual da IA generativa.
+- Dados longitudinais sobre populações diversas.
+
+#### Questões em Aberto
+1. De que forma interações de longo prazo com algoritmos afetam a autonomia e a percepção de privacidade?
+2. Quais estruturas de design podem mitigar a ilusão visual preservando a autopresentação autêntica?

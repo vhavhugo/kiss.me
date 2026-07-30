@@ -8,6 +8,8 @@ import '../widgets/action_button.dart';
 import '../widgets/dissolving_km_animation.dart';
 import '../../domain/entities/interaction_entity.dart';
 
+import '../widgets/ai_ethics_panel.dart';
+
 class RadarPage extends ConsumerStatefulWidget {
   const RadarPage({super.key});
 
@@ -108,7 +110,9 @@ class _RadarPageState extends ConsumerState<RadarPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  DissolvingKmAnimation(radiusKm: search.currentRadiusKm),
+                  const DissolvingKmAnimation(radiusKm: 0.0),
+                  const SizedBox(height: 30),
+                  const AiEthicsPanel(), // Transparência Global (Meske, 2022)
                   const SizedBox(height: 30),
                   Text(
                     !auth.isOnline ? "Você está invisível" : "Procurando conexões reais...",

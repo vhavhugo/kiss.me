@@ -1,5 +1,6 @@
 import 'question_entity.dart';
 import 'affinity_explanation_entity.dart';
+import '../../../profile/domain/entities/profile_authenticity_entity.dart';
 
 class UserEntity {
   final String id;
@@ -8,7 +9,8 @@ class UserEntity {
   final double distanceInMeters;
   final String bio;
   final List<QuestionEntity> icebreakers;
-  final AffinityExplanationEntity? affinity; // IA de afinidade explicável
+  final AffinityExplanationEntity? affinity;
+  final ProfileAuthenticityEntity authenticity; // Foco em segurança (Datey, 2024)
 
   UserEntity({
     required this.id,
@@ -17,6 +19,7 @@ class UserEntity {
     required this.distanceInMeters,
     required this.bio,
     required this.icebreakers,
+    required this.authenticity,
     this.affinity,
   });
 }

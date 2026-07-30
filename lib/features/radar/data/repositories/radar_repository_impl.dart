@@ -4,6 +4,7 @@ import '../../domain/repositories/radar_repository.dart';
 import '../datasources/radar_remote_datasource.dart';
 
 import '../../domain/entities/affinity_explanation_entity.dart';
+import '../../../profile/domain/entities/profile_authenticity_entity.dart';
 
 class RadarRepositoryImpl implements RadarRepository {
   final RadarRemoteDataSource _remoteDataSource;
@@ -50,6 +51,12 @@ class RadarRepositoryImpl implements RadarRepository {
         distanceInMeters: 0.0,
         bio: profile['bio'] ?? '',
         icebreakers: [],
+        authenticity: ProfileAuthenticityEntity(
+          level: AuthenticityLevel.verified,
+          isAiGenerated: false,
+          verificationMethod: "Real-time Selfie",
+          lastVerifiedAt: DateTime.now(),
+        ),
         affinity: AffinityExplanationEntity(
           score: 0.85,
           justification: "Nossa IA detectou que vocês compartilham o amor por viagens e café.",

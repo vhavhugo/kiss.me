@@ -3,6 +3,7 @@ import '../../domain/entities/user_entity.dart';
 import '../../../../core/theme/app_colors.dart';
 
 import '../widgets/ai_trust_badge.dart';
+import '../widgets/authenticity_badge.dart';
 
 class ProfileCard extends StatelessWidget {
   final UserEntity user;
@@ -57,6 +58,8 @@ class ProfileCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
+                AuthenticityBadge(level: user.authenticity.level),
+                const Spacer(),
                 if (user.affinity != null)
                   AiTrustBadge(
                     label: "${(user.affinity!.score * 100).toInt()}% COMPATÍVEL",

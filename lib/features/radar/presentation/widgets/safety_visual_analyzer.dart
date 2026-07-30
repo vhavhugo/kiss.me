@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
 
 /// Componente que utiliza Alto Contraste e Luminosidade para Análise Visual Clara (Sumter, 2018)
 class SafetyVisualAnalyzer extends StatelessWidget {

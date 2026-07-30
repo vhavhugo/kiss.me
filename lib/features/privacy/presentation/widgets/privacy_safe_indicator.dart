@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
 
 class PrivacySafeIndicator extends StatelessWidget {
   const PrivacySafeIndicator({super.key});

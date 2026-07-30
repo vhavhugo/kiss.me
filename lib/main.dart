@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/main_navigation/presentation/pages/main_navigation_page.dart';
@@ -15,7 +14,7 @@ void main() async {
 
   await Supabase.initialize(
     url: 'https://tfjnbbybrdcmjxwlcuzw.supabase.co/rest/v1/',
-    anonKey: 'sb_publishable_VK51tv5QTgZZbWce8dnCSQ_5Jxoc8hA',
+    publishableKey: 'sb_publishable_VK51tv5QTgZZbWce8dnCSQ_5Jxoc8hA',
   );
 
   runApp(

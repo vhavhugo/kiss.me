@@ -11,7 +11,6 @@ import '../../domain/entities/interaction_entity.dart';
 import '../widgets/ai_trust_system.dart';
 import '../../../../features/privacy/presentation/widgets/privacy_safe_indicator.dart';
 import '../../../../features/gamification/presentation/widgets/gamification_progress_bar.dart';
-import '../widgets/match_celebration_overlay.dart';
 
 class RadarPage extends ConsumerStatefulWidget {
   const RadarPage({super.key});

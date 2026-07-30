@@ -3,6 +3,8 @@ import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/radar_repository.dart';
 import '../datasources/radar_remote_datasource.dart';
 
+import '../../domain/entities/affinity_explanation_entity.dart';
+
 class RadarRepositoryImpl implements RadarRepository {
   final RadarRemoteDataSource _remoteDataSource;
   final SupabaseClient _supabase;
@@ -48,6 +50,11 @@ class RadarRepositoryImpl implements RadarRepository {
         distanceInMeters: 0.0,
         bio: profile['bio'] ?? '',
         icebreakers: [],
+        affinity: AffinityExplanationEntity(
+          score: 0.85,
+          justification: "Nossa IA detectou que vocês compartilham o amor por viagens e café.",
+          commonInterests: ["Viagens", "Café"],
+        ),
       );
     }).toList();
   }

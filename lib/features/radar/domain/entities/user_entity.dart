@@ -1,4 +1,5 @@
 import 'question_entity.dart';
+import 'affinity_explanation_entity.dart';
 
 class UserEntity {
   final String id;
@@ -7,6 +8,7 @@ class UserEntity {
   final double distanceInMeters;
   final String bio;
   final List<QuestionEntity> icebreakers;
+  final AffinityExplanationEntity? affinity; // IA de afinidade explicável
 
   UserEntity({
     required this.id,
@@ -15,5 +17,6 @@ class UserEntity {
     required this.distanceInMeters,
     required this.bio,
     required this.icebreakers,
+    this.affinity,
   });
 }

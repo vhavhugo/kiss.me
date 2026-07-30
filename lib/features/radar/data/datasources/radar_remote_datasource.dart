@@ -14,8 +14,7 @@ class RadarRemoteDataSource {
         body: location.toJson(),
       );
     } catch (e) {
-      // Log de erro profissional - silencia para o usuário não ser interrompido
-      print('Redis Update Location Error: $e');
+      // Log de erro profissional silenciado para produção
     }
   }
 
@@ -32,7 +31,6 @@ class RadarRemoteDataSource {
       }
       return [];
     } catch (e) {
-      print('Redis Search Nearby Error: $e');
       return [];
     }
   }

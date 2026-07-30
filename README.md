@@ -293,3 +293,30 @@ Os modelos de negócio gerenciam ativamente o sistema de recompensas. Matches "f
 
 ### Conclusão sobre Recompensas
 O design de interface que utiliza o deslizar como motor de busca é altamente eficaz para a retenção, mas exige uma análise crítica sobre seu custo emocional e o impacto na autenticidade das relações humanas.
+
+---
+
+## Estratégias de Monetização e Valor Percebido
+
+Os aplicativos de namoro impulsionam os gastos por meio de gatilhos de curiosidade emocional e modelos freemium que fazem com que as compras pareçam recompensadoras em vez de caras (Pettersen, 2023).
+
+### Gatilhos Emocionais e Gastos Gamificados
+- **Curiosidade Imediata**: Notificações de "alguém curtiu você" funcionam como o principal motor de conversão, onde os usuários pagam para revelar a identidade do par (Pettersen, 2023).
+- **Minijogos Pagos**: Exemplos como o "Crushtime" utilizam a gamificação para transformar o gasto em um desafio lúdico, reduzindo a percepção de custo (Pettersen, 2023).
+- **Vitória Gamificada**: Tratar o encontro como uma "vitória" em um jogo prioriza a gratificação imediata e incentiva microtransações para impulsionar o desempenho do perfil (Nader, 2024).
+
+### Modelos de Negócio e Eficácia
+| Estratégia | Mecanismo | Efeito nos Gastos |
+| :--- | :--- | :--- |
+| **Freemium** | Versão básica gratuita com recursos limitados. | Impulsiona upgrade através de fricções estratégicas. |
+| **Assinatura** | Preço fixo para acesso recorrente. | Método mais comum; garante receita previsível. |
+| **Preço Contratual** | Taxa única para facilitar a busca específica. | Alinha interesses e gera maior percepção de justiça. |
+| **Promoções** | Descontos temporários em recursos premium. | Melhora a conversão sem prejudicar a marca a longo prazo. |
+
+### Valor Percebido e Experiência de Compra
+A disposição para pagar é determinada pelo valor percebido nas dimensões funcional, hedônica e social. 
+- **Justiça Percebida**: Monetizações agressivas afastam o usuário; quando a estratégia é percebida como justa e agrega valor real à experiência, a probabilidade de gasto aumenta (Salehudin, 2022).
+- **Engajamento Recompensador**: Funções de presentes e distintivos (badges) tornam a experiência de gastar envolvente e diminuem a carga cognitiva da transação financeira (Lim, 2022).
+
+### Conclusão sobre Monetização
+Para o **Kiss Me**, a chave do sucesso financeiro reside em alinhar a estratégia de preços com a motivação romântica do usuário, transformando o investimento financeiro em um ato racional e prazeroso que potencializa as chances de conexão real.

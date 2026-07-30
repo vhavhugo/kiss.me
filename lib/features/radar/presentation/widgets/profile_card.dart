@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../../../core/theme/app_colors.dart';
 
+import '../widgets/ai_trust_badge.dart';
+
 class ProfileCard extends StatelessWidget {
   final UserEntity user;
 
@@ -55,21 +57,11 @@ class ProfileCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.online.withAlpha(200),
-                    borderRadius: BorderRadius.circular(20),
+                if (user.affinity != null)
+                  AiTrustBadge(
+                    label: "${(user.affinity!.score * 100).toInt()}% COMPATÍVEL",
+                    description: user.affinity!.justification,
                   ),
-                  child: const Text(
-                    "ON-LINE",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
               ],
             ),
             const SizedBox(height: 5),

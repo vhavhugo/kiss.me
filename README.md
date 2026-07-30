@@ -185,3 +185,32 @@ A integração da IA representa uma faca de dois gumes. Embora as intervenções
 #### Questões em Aberto
 1. De que forma interações de longo prazo com algoritmos afetam a autonomia e a percepção de privacidade?
 2. Quais estruturas de design podem mitigar a ilusão visual preservando a autopresentação autêntica?
+
+---
+
+## Branding e Teoria das Cores em Aplicativos de Relacionamento
+
+Tons quentes e fundos com baixa saturação são os mais adequados para aplicativos de namoro, mas não existe uma única cor "ideal". A escolha da cor é crucial para transmitir recursos e temas, além de fortalecer a memória do usuário (Jun, 2023).
+
+### Psicologia das Cores e Ressonância Emocional
+- **Cores Quentes**: Transmitem calor, suavidade e ressonância emocional. Estudos indicam uma forte preferência por tons quentes, com o laranja sendo preferido por 60,2% dos respondentes em certas pesquisas (Liu, 2024).
+- **Evitando a Frieza**: Fundos excessivamente brancos podem parecer frios; adicionar tons quentes melhora a interface e a conexão emocional (Liu, 2024).
+
+### Propriedades das Cores no Design de UI
+| Propriedade | Efeito Psicológico | Aplicação na Interface |
+| :--- | :--- | :--- |
+| **Tons Quentes** | Calor e suavidade | Esquema primário; evita sensação de frieza. |
+| **Tons Frios** | Racionalidade e dureza | Combinação clara para alvos de pesquisa. |
+| **Baixa Saturação** | Redução da fadiga ocular | Melhor para o desempenho de busca no fundo. |
+| **Alta Luminosidade** | Emoção pura e limpa | Transmite bem o texto com nuances acolhedoras. |
+
+### Saturação e Desempenho Visual
+Cores de fundo com **baixa saturação** proporcionam maior usabilidade e retardam a fadiga ocular, permitindo que os usuários concluam tarefas de busca mais rapidamente (Deng, 2022). A combinação de ícones quadrados arredondados com esses fundos otimiza significativamente a experiência visual.
+
+### Estratégia de Marca e Posicionamento
+- **Diferenciação**: Planos de cores devem se destacar da concorrência e funcionar em todas as plataformas (Cai, 2026).
+- **Gamificação**: O uso de "design sombrio" e gamificação desperta curiosidade emocional, agregando valor ao design (Pettersen, 2023).
+- **Autenticidade**: O estilo visual deve refletir a personalidade para uma apresentação autêntica (Lestari, 2024).
+
+### Conclusão
+Não existe uma cor universal; a configuração mais eficaz combina **tons quentes, baixa saturação e alta luminosidade**. A escolha deve alinhar a identidade da marca ao perfil demográfico do público-alvo para gerar a melhor ressonância emocional.

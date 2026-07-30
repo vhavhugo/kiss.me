@@ -266,3 +266,30 @@ Os aplicativos de namoro incorporam gestos de deslizar, testes e recompensas par
 
 ### Conclusão Geral sobre Gamificação
 Embora as mecânicas de gamificação sejam extremamente eficazes para a retenção e engajamento na plataforma, elas trazem o desafio ético de evitar a mercantilização excessiva da intimidade e a despersonalização dos vínculos humanos.
+
+---
+
+## Mecânica de Deslizar e Cronogramas de Recompensas
+
+A mecânica de deslizar o dedo na tela funciona como um **esquema de recompensa de proporção variável**, prendendo os usuários em ciclos psicológicos semelhantes aos de máquinas caça-níqueis (Zytko, 2018; Nader, 2024).
+
+### O Ciclo da Máquina Caça-Níqueis
+- **Fluxo Interminável**: A ausência de pausas e a imprevisibilidade dos perfis mantêm os usuários na expectativa constante de que a próxima "jogada" traga uma combinação (Nader, 2024).
+- **Rejeição Invisível**: O design torna as rejeições silenciosas, fornecendo feedback apenas para sucessos (matches). Isso reduz o risco percebido e incentiva o uso excessivo (Binder, 2024).
+- **Gratificação Imediata**: Janelas pop-up de combinação interrompem o fluxo para oferecer uma sensação de "vitória", reforçando o comportamento de jogo.
+
+### Consequências Psicológicas e Estratégias de Uso
+| Mecanismo | Efeito na Experiência do Usuário | Referência |
+| :--- | :--- | :--- |
+| **Proporção Variável** | Recompensas intermitentes sustentam a compulsão ("Puxe a alavanca só mais uma vez"). | Zytko, 2018 |
+| **Baralho Infinito** | Ciclo contínuo baseado na esperança de sorte, sem indicação de limite. | Nader, 2024 |
+| **Diferença de Gênero** | Homens tendem a adotar a "estratégia de tiro ao alvo" (deslizar para todos), enquanto mulheres são mais seletivas. | LeFebvre, 2018 |
+
+### Impacto na Saúde Mental e Bem-Estar
+O uso compulsivo está associado a consequências adversas, como sobrecarga de opções, medo de ficar solteiro e comparação social ascendente (Thomas, 2023). Estudos indicam níveis mais altos de ansiedade e depressão em usuários frequentes, intensificados pela duração do uso (Holtzhausen, 2020).
+
+### Manipulação e Monetização da Plataforma
+Os modelos de negócio gerenciam ativamente o sistema de recompensas. Matches "fáceis" demais prejudicam o modelo freemium, enquanto usuários menos populares podem sofrer uma "morte social" na hierarquia algorítmica (Narr, 2021). Plataformas baseadas em localização aceleram esses ciclos por meio de recompensas de proximidade instantâneas (Wang, 2025).
+
+### Conclusão sobre Recompensas
+O design de interface que utiliza o deslizar como motor de busca é altamente eficaz para a retenção, mas exige uma análise crítica sobre seu custo emocional e o impacto na autenticidade das relações humanas.

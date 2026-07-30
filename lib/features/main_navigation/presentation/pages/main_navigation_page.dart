@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/ads/banner_ad_widget.dart';
 import '../../../radar/presentation/pages/radar_page.dart';
 
 class MainNavigationPage extends ConsumerStatefulWidget {
@@ -24,17 +23,9 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          Expanded(
-            child: IndexedStack(
-              index: _selectedIndex,
-              children: _pages,
-            ),
-          ),
-          // Monetização 100% Grátis: Banner de propaganda sempre visível na base
-          const BannerAdWidget(),
-        ],
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _pages,
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(

@@ -30,7 +30,7 @@ class KissMeApp extends StatelessWidget {
       title: 'Kiss Me',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const LoginPage(),
+      home: const MainNavigationPage(), // Pula direto para a Home logado
       routes: {
         '/login': (context) => const LoginPage(),
         '/onboarding': (context) => const OnboardingPage(),

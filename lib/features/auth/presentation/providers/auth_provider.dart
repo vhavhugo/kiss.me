@@ -40,7 +40,18 @@ class AuthNotifier extends Notifier<AuthState> {
   @override
   AuthState build() {
     _repository = ref.read(authRepositoryProvider);
-    return AuthState(status: AuthStatus.unauthenticated);
+    
+    // Início Automático: Simula um estado logado persistente
+    // Em produção, isso seria verificado via Supabase Session
+    return AuthState(
+      status: AuthStatus.authenticated,
+      isOnline: true,
+      user: AuthUserEntity(
+        id: 'user-default-id',
+        email: 'usuario@kissme.app',
+        isFirstLogin: false,
+      ),
+    );
   }
 
   Future<void> loginWithGoogle() async {

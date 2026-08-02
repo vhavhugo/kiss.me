@@ -4,6 +4,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../radar/presentation/pages/radar_page.dart';
 import '../../../radar/presentation/pages/kiss_me_page.dart';
 
+import '../../../profile/presentation/pages/questionnaire_page.dart';
+
 class MainNavigationPage extends ConsumerStatefulWidget {
   const MainNavigationPage({super.key});
 
@@ -102,6 +104,19 @@ class SettingsPage extends StatelessWidget {
           const ListTile(
             leading: Icon(Icons.security_outlined),
             title: Text("Privacidade"),
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.menu_book_rounded, color: AppColors.primary),
+            title: const Text("Caderno de Perguntas"),
+            subtitle: const Text("O que temos em comum?"),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const QuestionnairePage()),
+              );
+            },
           ),
         ],
       ),

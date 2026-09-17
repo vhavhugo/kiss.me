@@ -28,7 +28,11 @@ class _RadarPageState extends ConsumerState<RadarPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authState = ref.read(authProvider);
       if (authState.isOnline) {
-        ref.read(radarSearchProvider.notifier).startSearch(-23.5505, -46.6333);
+        ref.read(radarSearchProvider.notifier).startSearch(
+              authState.user!.id,
+              -23.5505,
+              -46.6333,
+            );
       }
     });
   }
@@ -69,7 +73,11 @@ class _RadarPageState extends ConsumerState<RadarPage> {
         ref.read(authProvider.notifier).toggleOnlineStatus();
         final newAuthState = ref.read(authProvider);
         if (newAuthState.isOnline) {
-          ref.read(radarSearchProvider.notifier).startSearch(-23.5505, -46.6333);
+          ref.read(radarSearchProvider.notifier).startSearch(
+                newAuthState.user!.id,
+                -23.5505,
+                -46.6333,
+              );
         } else {
           ref.read(radarSearchProvider.notifier).stopSearch();
         }

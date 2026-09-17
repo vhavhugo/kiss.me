@@ -42,10 +42,11 @@ class RadarSearchNotifier extends Notifier<RadarSearchState> {
     return RadarSearchState(users: [], currentRadiusKm: 0.5, isSearching: false);
   }
 
-  void startSearch(double lat, double lng) async {
+  void startSearch(String userId, double lat, double lng) async {
     _expansionTimer?.cancel();
     state = state.copyWith(isSearching: true, users: [], currentRadiusKm: 0.2); // Inicia com 200m
-    _performSearch(lat, lng);
+    await _repository.updateLocation(userId, lat, lng);
+    _performSearch(userId, lat, lng);
   }
 
   void stopSearch() {
@@ -53,10 +54,15 @@ class RadarSearchNotifier extends Notifier<RadarSearchState> {
     state = state.copyWith(isSearching: false, users: [], currentRadiusKm: 0.0);
   }
 
-  void _performSearch(double lat, double lng) async {
+  void _performSearch(String userId, double lat, double lng) async {
     if (!state.isSearching) return;
 
-    final users = await _repository.getNearbyUsers(lat, lng, state.currentRadiusKm);
+    final users = await _repository.getNearbyUsers(
+      userId,
+      lat,
+      lng,
+      state.currentRadiusKm,
+    );
 
     if (users.isNotEmpty) {
       state = state.copyWith(users: users, isSearching: false);
@@ -66,7 +72,7 @@ class RadarSearchNotifier extends Notifier<RadarSearchState> {
         _expansionTimer = Timer(const Duration(seconds: 2), () {
           final nextRadius = _getNextRadius(state.currentRadiusKm);
           state = state.copyWith(currentRadiusKm: nextRadius);
-          _performSearch(lat, lng);
+          _performSearch(userId, lat, lng);
         });
       } else {
         state = state.copyWith(isSearching: false);

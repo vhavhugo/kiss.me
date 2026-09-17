@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/entities/auth_user_entity.dart';
@@ -5,7 +6,7 @@ import '../../domain/repositories/auth_repository.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final SupabaseClient _supabase;
-  
+
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
 
   AuthRepositoryImpl(this._supabase);
@@ -13,6 +14,14 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<AuthUserEntity?> signInWithGoogle() async {
     try {
+      if (kIsWeb) {
+        await _supabase.auth.signInWithOAuth(
+          OAuthProvider.google,
+          redirectTo: _authCallbackUrl,
+        );
+        return null;
+      }
+
       // 1. Inicia o fluxo de autenticação do Google
       final googleAccount = await _googleSignIn.authenticate();
 
@@ -43,41 +52,23 @@ class AuthRepositoryImpl implements AuthRepository {
         email: user.email ?? '',
         isFirstLogin: true,
       );
-    } catch (e) {
-      return null;
-    }
-  }
-
-  @override
-  Future<void> signInWithInstagram() async {
-    try {
-      await _supabase.auth.signInWithOAuth(
-        const OAuthProvider('instagram'),
-        redirectTo: 'https://tfjnbbybrdcmjxwlcuzw.supabase.co/auth/v1/callback',
-      );
-    } catch (e) {
-      return;
+    } catch (_) {
+      rethrow;
     }
   }
 
   @override
   Future<void> signInWithTikTok() async {
-    try {
-      await _supabase.auth.signInWithOAuth(
-        const OAuthProvider('tiktok'),
-        redirectTo: 'https://tfjnbbybrdcmjxwlcuzw.supabase.co/auth/v1/callback',
-      );
-    } catch (e) {
-      return;
-    }
+    await _supabase.auth.signInWithOAuth(
+      const OAuthProvider('tiktok'),
+      redirectTo: _authCallbackUrl,
+    );
   }
 
   @override
   Future<void> signOut() async {
-    await Future.wait([
-      _supabase.auth.signOut(),
-      _googleSignIn.signOut(),
-    ]);
+    await _supabase.auth.signOut();
+    if (!kIsWeb) await _googleSignIn.signOut();
   }
 
   @override
@@ -91,4 +82,6 @@ class AuthRepositoryImpl implements AuthRepository {
           isFirstLogin: false,
         );
       });
+
+  String get _authCallbackUrl => '${_supabase.rest.url}/auth/v1/callback';
 }

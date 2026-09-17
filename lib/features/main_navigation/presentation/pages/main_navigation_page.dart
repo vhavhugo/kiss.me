@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../radar/presentation/pages/radar_page.dart';
 import '../../../radar/presentation/pages/kiss_me_page.dart';
+import '../../../chat/presentation/pages/chat_page.dart';
 
 import '../../../profile/presentation/pages/questionnaire_page.dart';
 
@@ -19,7 +20,7 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
   final List<Widget> _pages = [
     const KissMePage(), // 1ª posição: Kiss Me (Antigo Perfil)
     const RadarPage(),  // 2ª posição: Kiss Me Now
-    const Center(child: Text("Conversas")), 
+    const ChatPage(),
     const SettingsPage(), // 4ª posição: Ajustes (com perfil dentro)
   ];
 

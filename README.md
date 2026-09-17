@@ -85,9 +85,72 @@ A segurança é a prioridade #1. A integração de IA no Kiss Me foca em:
 ## 🚀 Como Executar o Projeto
 1. Clone o repositório.
 2. Certifique-se de que o Flutter 3.44+ está instalado.
-3. Configure as chaves no arquivo `.env`.
+3. Configure `SUPABASE_URL` e `SUPABASE_PUBLISHABLE_KEY` com `--dart-define`.
 4. Execute `flutter pub get`.
 5. Execute `flutter run`.
+
+### Configurar o Supabase para ficar online
+
+O aplicativo não usa mais uma URL fixa. Pegue no Supabase Dashboard o **Project URL** e a chave **Publishable key** do projeto correto e inicie assim:
+
+```bash
+flutter run -d chrome \
+	--dart-define=SUPABASE_URL=https://SEU-PROJETO.supabase.co \
+	--dart-define=SUPABASE_PUBLISHABLE_KEY=sua-chave-publishable
+```
+
+Depois execute [supabase/chat_schema.sql](supabase/chat_schema.sql) no SQL Editor. O usuário também precisa estar autenticado no Supabase; o usuário local simulado não substitui uma sessão real para as políticas RLS.
+
+### Habilitar login com Google
+
+O botão Google depende do provider Google habilitado no mesmo projeto Supabase usado em `SUPABASE_URL`:
+
+1. Abra `Authentication > Providers > Google` no Supabase Dashboard.
+2. Ative o provider.
+3. Crie ou selecione um OAuth Client ID do tipo **Web application** no Google Cloud Console.
+4. Informe o Client ID e o Client Secret no provider Google do Supabase.
+5. No Google Cloud Console, adicione a URL de callback exibida pelo Supabase em **Authorized redirect URIs**.
+6. Em `Authentication > URL Configuration`, adicione a URL usada pelo app, por exemplo `http://localhost:8080`.
+
+Sem essa configuração, o Supabase retorna:
+
+```json
+{"code":400,"error_code":"validation_failed","msg":"Unsupported provider: provider is not enabled"}
+```
+
+O aplicativo exibe esse erro como uma instrução para habilitar o Google, em vez de iniciar uma sessão falsa.
+
+### Executar sem Xcode
+
+Para executar no macOS sem instalar o Xcode, use o Flutter Web no Chrome:
+
+```bash
+flutter clean
+flutter pub get
+flutter run -d chrome
+```
+
+Também é possível gerar uma versão estática:
+
+```bash
+flutter build web
+```
+
+O build web foi validado com sucesso. Chamadas WebRTC funcionam no Chrome com permissão de câmera e microfone; para chamadas entre dispositivos, o Supabase precisa estar configurado e a infraestrutura deve incluir STUN/TURN quando a conexão direta não for possível.
+
+Se o console mostrar `Falling back to CPU-only rendering` ou `webGLVersion is -1`, o Chrome iniciou sem WebGL. Isso é um aviso de renderização, não um erro do Supabase nem do aplicativo. No Chrome, abra `chrome://settings/system`, ative **Usar aceleração gráfica quando disponível**, reinicie o navegador e confirme em `chrome://gpu` que **WebGL** está acelerado. Depois execute novamente:
+
+```bash
+flutter run -d chrome
+```
+
+Se o navegador continuar bloqueando a GPU, abra uma nova instância do Chrome com:
+
+```bash
+open -na "Google Chrome" --args --enable-webgl --ignore-gpu-blocklist --enable-gpu-rasterization
+```
+
+O destino `macOS` nativo não pode ser compilado somente com Command Line Tools: ele exige o Xcode completo e o `xcodebuild`.
 
 ---
 © 2026 Kiss Me - Porque tudo começa com um beijo.

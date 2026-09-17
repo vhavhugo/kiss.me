@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/radar_repository.dart';
 import '../datasources/radar_remote_datasource.dart';
+import '../models/user_location_model.dart';
 
 import '../../domain/entities/affinity_explanation_entity.dart';
 import '../../../profile/domain/entities/profile_authenticity_entity.dart';
@@ -13,7 +14,19 @@ class RadarRepositoryImpl implements RadarRepository {
   RadarRepositoryImpl(this._remoteDataSource, this._supabase);
 
   @override
-  Future<List<UserEntity>> getNearbyUsers(double lat, double lng, double radiusKm) async {
+  Future<void> updateLocation(String userId, double lat, double lng) {
+    return _remoteDataSource.updateRealtimeLocation(
+      UserLocationModel(userId: userId, latitude: lat, longitude: lng),
+    );
+  }
+
+  @override
+  Future<List<UserEntity>> getNearbyUsers(
+    String userId,
+    double lat,
+    double lng,
+    double radiusKm,
+  ) async {
     // 1. Consulta ultra-rápida no Redis para pegar IDs no raio dinâmico
     final ids = await _remoteDataSource.getNearbyUserIds(lat, lng, radiusKm);
 
@@ -23,14 +36,11 @@ class RadarRepositoryImpl implements RadarRepository {
 
     // 2. Busca e Filtra no PostgreSQL baseado no perfil selecionado anteriormente
     // Filtramos por: IDs próximos (do Redis) + Preferências de Gênero do usuário logado
-    final currentUser = _supabase.auth.currentUser;
-    if (currentUser == null) return [];
-
     // Pegamos as preferências do usuário logado primeiro
     final myProfile = await _supabase
         .from('profiles')
         .select('search_preference')
-        .eq('id', currentUser.id)
+        .eq('id', userId)
         .single();
 
     final searchPrefs = List<String>.from(myProfile['search_preference'] ?? []);

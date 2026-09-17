@@ -5,26 +5,56 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:kiss_me/main.dart';
+import 'package:kiss_me/features/auth/domain/entities/auth_user_entity.dart';
+import 'package:kiss_me/features/auth/presentation/providers/auth_provider.dart';
+import 'package:kiss_me/features/radar/presentation/providers/radar_search_provider.dart';
+
+class _TestAuthNotifier extends AuthNotifier {
+  @override
+  AuthState build() {
+    return AuthState(
+      status: AuthStatus.authenticated,
+      isOnline: false,
+      user: AuthUserEntity(
+        id: 'test-user',
+        email: 'test@kissme.app',
+        isFirstLogin: false,
+      ),
+    );
+  }
+}
+
+class _TestRadarSearchNotifier extends RadarSearchNotifier {
+  @override
+  RadarSearchState build() {
+    return RadarSearchState(
+      users: const [],
+      currentRadiusKm: 0.0,
+      isSearching: false,
+    );
+  }
+}
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const KissMeApp());
+  testWidgets('app starts on the Kiss Me home screen', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authProvider.overrideWith(_TestAuthNotifier.new),
+          radarSearchProvider.overrideWith(_TestRadarSearchNotifier.new),
+        ],
+        child: KissMeApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(find.text('Kiss Me'), findsWidgets);
+    expect(find.text('Kiss Me Now'), findsWidgets);
+    expect(find.text('Chats'), findsOneWidget);
+    expect(find.text('Ajustes'), findsOneWidget);
   });
 }

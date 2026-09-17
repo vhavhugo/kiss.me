@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user_location_model.dart';
 
@@ -14,7 +15,7 @@ class RadarRemoteDataSource {
         body: location.toJson(),
       );
     } catch (e) {
-      // Log de erro profissional silenciado para produção
+      debugPrint('Falha ao atualizar localização: $e');
     }
   }
 
@@ -31,6 +32,7 @@ class RadarRemoteDataSource {
       }
       return [];
     } catch (e) {
+      debugPrint('Falha ao buscar pessoas próximas: $e');
       return [];
     }
   }

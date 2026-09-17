@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/entities/auth_user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../data/repositories/auth_repository_impl.dart';
@@ -40,17 +41,31 @@ class AuthNotifier extends Notifier<AuthState> {
   @override
   AuthState build() {
     _repository = ref.read(authRepositoryProvider);
-    
-    // Início Automático: Simula um estado logado persistente
-    // Em produção, isso seria verificado via Supabase Session
+    final currentUser = Supabase.instance.client.auth.currentUser;
+    final subscription = _repository.authStateChanges.listen((user) {
+      if (user == null) {
+        state = AuthState(status: AuthStatus.unauthenticated);
+      } else {
+        state = AuthState(
+          status: user.isFirstLogin ? AuthStatus.onboarding : AuthStatus.authenticated,
+          user: user,
+          isOnline: true,
+        );
+      }
+    });
+    ref.onDispose(subscription.cancel);
+
+    if (currentUser == null) {
+      return AuthState(status: AuthStatus.unauthenticated);
+    }
     return AuthState(
       status: AuthStatus.authenticated,
-      isOnline: true,
       user: AuthUserEntity(
-        id: 'user-default-id',
-        email: 'usuario@kissme.app',
+        id: currentUser.id,
+        email: currentUser.email ?? '',
         isFirstLogin: false,
       ),
+      isOnline: true,
     );
   }
 
@@ -60,23 +75,13 @@ class AuthNotifier extends Notifier<AuthState> {
       final user = await _repository.signInWithGoogle();
       if (user != null) {
         state = state.copyWith(
-          status: AuthStatus.authenticated,
+          status: user.isFirstLogin ? AuthStatus.onboarding : AuthStatus.authenticated,
           user: user,
           isOnline: true,
         );
       } else {
         state = state.copyWith(status: AuthStatus.unauthenticated);
       }
-    } catch (e) {
-      state = state.copyWith(status: AuthStatus.unauthenticated);
-      rethrow;
-    }
-  }
-
-  Future<void> loginWithInstagram() async {
-    state = state.copyWith(status: AuthStatus.authenticating);
-    try {
-      await _repository.signInWithInstagram();
     } catch (e) {
       state = state.copyWith(status: AuthStatus.unauthenticated);
       rethrow;

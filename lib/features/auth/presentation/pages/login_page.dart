@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../providers/auth_provider.dart';
 
@@ -53,22 +54,6 @@ class LoginPage extends ConsumerWidget {
                         textColor: Colors.black87,
                         onTap: () => _handleGoogleLogin(context, ref),
                       ),
-                      const SizedBox(height: 15),
-                      _SocialLoginButton(
-                        icon: FontAwesomeIcons.instagram,
-                        label: "Entrar com Instagram",
-                        color: Colors.purple[700]!,
-                        textColor: Colors.white,
-                        onTap: () => _handleInstagramLogin(context, ref),
-                      ),
-                      const SizedBox(height: 15),
-                      _SocialLoginButton(
-                        icon: FontAwesomeIcons.tiktok,
-                        label: "Entrar com TikTok",
-                        color: Colors.black,
-                        textColor: Colors.white,
-                        onTap: () => _handleTikTokLogin(context, ref),
-                      ),
                     ],
                   ),
                 ),
@@ -89,40 +74,20 @@ class LoginPage extends ConsumerWidget {
   void _handleGoogleLogin(BuildContext context, WidgetRef ref) async {
     try {
       await ref.read(authProvider.notifier).loginWithGoogle();
-      if (context.mounted) {
-        Navigator.pushReplacementNamed(context, '/onboarding');
-      }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Falha no Google: $e')),
+          SnackBar(content: Text(_providerError('Google', e))),
         );
       }
     }
   }
 
-  void _handleInstagramLogin(BuildContext context, WidgetRef ref) async {
-    try {
-      await ref.read(authProvider.notifier).loginWithInstagram();
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Falha no Instagram: $e')),
-        );
-      }
+  String _providerError(String provider, Object error) {
+    if (error is AuthException && error.code == 'validation_failed') {
+      return 'Login $provider indisponível: habilite o provider $provider no Supabase Dashboard.';
     }
-  }
-
-  void _handleTikTokLogin(BuildContext context, WidgetRef ref) async {
-    try {
-      await ref.read(authProvider.notifier).loginWithTikTok();
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Falha no TikTok: $e')),
-        );
-      }
-    }
+    return 'Falha no login $provider. Verifique a configuração do Supabase.';
   }
 }
 

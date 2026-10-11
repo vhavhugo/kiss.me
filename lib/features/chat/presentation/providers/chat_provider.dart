@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../../core/config/app_config.dart';
+import '../../../../core/mock/mock_chat_repository.dart';
 import '../../data/repositories/chat_repository_impl.dart';
 import '../../domain/entities/chat_message.dart';
 import '../../domain/repositories/chat_repository.dart';
@@ -7,10 +9,18 @@ import '../../domain/repositories/chat_repository.dart';
 const chatConversationId = 'demo-conversation';
 
 final chatRepositoryProvider = Provider<ChatRepository>((ref) {
+  final isMock = ref.watch(isMockModeProvider);
+  if (isMock) {
+    return MockChatRepository();
+  }
   return ChatRepositoryImpl(Supabase.instance.client);
 });
 
 final chatMessagesProvider = StreamProvider<List<ChatMessage>>((ref) {
+  final isMock = ref.watch(isMockModeProvider);
+  if (isMock) {
+    return ref.watch(chatRepositoryProvider).watchMessages(chatConversationId);
+  }
   if (Supabase.instance.client.auth.currentSession == null) {
     throw StateError('Usuário não autenticado no Supabase.');
   }

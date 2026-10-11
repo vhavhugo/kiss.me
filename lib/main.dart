@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/theme/app_theme.dart';
+import 'core/config/app_config.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/main_navigation/presentation/pages/main_navigation_page.dart';
 import 'features/onboarding/presentation/pages/onboarding_page.dart';
@@ -10,8 +11,25 @@ import 'features/auth/presentation/providers/auth_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
-  const supabasePublishableKey = String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY');
+  // Em modo Mock, não inicializa o Supabase evitando erros de rede e DNS
+  if (kDefaultUseMock) {
+    runApp(
+      const ProviderScope(
+        child: KissMeApp(),
+      ),
+    );
+    return;
+  }
+
+  // Fallback values let `flutter run` work without passing --dart-define; override them for other projects.
+  const supabaseUrl = String.fromEnvironment(
+    'SUPABASE_URL',
+    defaultValue: 'https://jdxmfvgcehtgnzlvjsqj.supabase.co',
+  );
+  const supabasePublishableKey = String.fromEnvironment(
+    'SUPABASE_PUBLISHABLE_KEY',
+    defaultValue: 'sb_publishable_ERN-62orEj8ymXJRA5hrqA_gmnlQ8lu',
+  );
   if (supabaseUrl.isEmpty || supabasePublishableKey.isEmpty) {
     runApp(
       const MaterialApp(
@@ -22,10 +40,14 @@ void main() async {
     return;
   }
 
-  await Supabase.initialize(
-    url: supabaseUrl,
-    publishableKey: supabasePublishableKey,
-  );
+  try {
+    await Supabase.initialize(
+      url: supabaseUrl,
+      publishableKey: supabasePublishableKey,
+    );
+  } catch (e) {
+    debugPrint('Supabase initialization failed: $e');
+  }
 
   runApp(
     const ProviderScope(

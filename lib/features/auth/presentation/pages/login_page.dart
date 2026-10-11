@@ -54,6 +54,22 @@ class LoginPage extends ConsumerWidget {
                         textColor: Colors.black87,
                         onTap: () => _handleGoogleLogin(context, ref),
                       ),
+                      const SizedBox(height: 14),
+                      _SocialLoginButton(
+                        icon: FontAwesomeIcons.instagram,
+                        label: "Entrar com Instagram",
+                        color: Colors.white,
+                        textColor: const Color(0xFFE1306C),
+                        onTap: () => _handleInstagramLogin(context, ref),
+                      ),
+                      const SizedBox(height: 14),
+                      _SocialLoginButton(
+                        icon: FontAwesomeIcons.tiktok,
+                        label: "Entrar com TikTok",
+                        color: Colors.black87,
+                        textColor: Colors.white,
+                        onTap: () => _handleTikTokLogin(context, ref),
+                      ),
                     ],
                   ),
                 ),
@@ -78,6 +94,30 @@ class LoginPage extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(_providerError('Google', e))),
+        );
+      }
+    }
+  }
+
+  void _handleInstagramLogin(BuildContext context, WidgetRef ref) async {
+    try {
+      await ref.read(authProvider.notifier).loginWithInstagram();
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_providerError('Instagram', e))),
+        );
+      }
+    }
+  }
+
+  void _handleTikTokLogin(BuildContext context, WidgetRef ref) async {
+    try {
+      await ref.read(authProvider.notifier).loginWithTikTok();
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_providerError('TikTok', e))),
         );
       }
     }

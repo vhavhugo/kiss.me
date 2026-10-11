@@ -4,6 +4,8 @@ import '../../domain/entities/auth_user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../../radar/presentation/providers/radar_provider.dart';
+import '../../../../core/config/app_config.dart';
+import '../../../../core/mock/mock_auth_repository.dart';
 
 enum AuthStatus { unauthenticated, authenticating, authenticated, onboarding }
 
@@ -32,6 +34,10 @@ class AuthState {
 }
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
+  final isMock = ref.watch(isMockModeProvider);
+  if (isMock) {
+    return MockAuthRepository();
+  }
   return AuthRepositoryImpl(ref.read(supabaseProvider));
 });
 
@@ -41,7 +47,8 @@ class AuthNotifier extends Notifier<AuthState> {
   @override
   AuthState build() {
     _repository = ref.read(authRepositoryProvider);
-    final currentUser = Supabase.instance.client.auth.currentUser;
+    final isMock = ref.read(isMockModeProvider);
+
     final subscription = _repository.authStateChanges.listen((user) {
       if (user == null) {
         state = AuthState(status: AuthStatus.unauthenticated);
@@ -55,6 +62,11 @@ class AuthNotifier extends Notifier<AuthState> {
     });
     ref.onDispose(subscription.cancel);
 
+    if (isMock) {
+      return AuthState(status: AuthStatus.unauthenticated);
+    }
+
+    final currentUser = Supabase.instance.client.auth.currentUser;
     if (currentUser == null) {
       return AuthState(status: AuthStatus.unauthenticated);
     }
@@ -88,10 +100,38 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
+  Future<void> loginWithInstagram() async {
+    state = state.copyWith(status: AuthStatus.authenticating);
+    try {
+      final user = await _repository.signInWithInstagram();
+      if (user != null) {
+        state = state.copyWith(
+          status: user.isFirstLogin ? AuthStatus.onboarding : AuthStatus.authenticated,
+          user: user,
+          isOnline: true,
+        );
+      } else {
+        state = state.copyWith(status: AuthStatus.unauthenticated);
+      }
+    } catch (e) {
+      state = state.copyWith(status: AuthStatus.unauthenticated);
+      rethrow;
+    }
+  }
+
   Future<void> loginWithTikTok() async {
     state = state.copyWith(status: AuthStatus.authenticating);
     try {
-      await _repository.signInWithTikTok();
+      final user = await _repository.signInWithTikTok();
+      if (user != null) {
+        state = state.copyWith(
+          status: user.isFirstLogin ? AuthStatus.onboarding : AuthStatus.authenticated,
+          user: user,
+          isOnline: true,
+        );
+      } else {
+        state = state.copyWith(status: AuthStatus.unauthenticated);
+      }
     } catch (e) {
       state = state.copyWith(status: AuthStatus.unauthenticated);
       rethrow;

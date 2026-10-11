@@ -8,8 +8,18 @@ class AuthRepositoryImpl implements AuthRepository {
   final SupabaseClient _supabase;
 
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+  bool _googleSignInInitialized = false;
+
+  static const _googleServerClientId =
+      '854347645823-llu6b8alkp8j40m6itj81139e5q2hu1r.apps.googleusercontent.com';
 
   AuthRepositoryImpl(this._supabase);
+
+  Future<void> _ensureGoogleSignInInitialized() async {
+    if (_googleSignInInitialized) return;
+    await _googleSignIn.initialize(serverClientId: _googleServerClientId);
+    _googleSignInInitialized = true;
+  }
 
   @override
   Future<AuthUserEntity?> signInWithGoogle() async {
@@ -23,6 +33,7 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       // 1. Inicia o fluxo de autenticação do Google
+      await _ensureGoogleSignInInitialized();
       final googleAccount = await _googleSignIn.authenticate();
 
       // 2. Obtém o ID Token (Obrigatório para Supabase)
@@ -58,17 +69,27 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> signInWithTikTok() async {
+  Future<AuthUserEntity?> signInWithTikTok() async {
     await _supabase.auth.signInWithOAuth(
       const OAuthProvider('tiktok'),
       redirectTo: _authCallbackUrl,
     );
+    return null;
+  }
+
+  @override
+  Future<AuthUserEntity?> signInWithInstagram() async {
+    await _supabase.auth.signInWithOAuth(
+      const OAuthProvider('facebook'),
+      redirectTo: _authCallbackUrl,
+    );
+    return null;
   }
 
   @override
   Future<void> signOut() async {
     await _supabase.auth.signOut();
-    if (!kIsWeb) await _googleSignIn.signOut();
+    if (!kIsWeb && _googleSignInInitialized) await _googleSignIn.signOut();
   }
 
   @override

@@ -3,7 +3,7 @@ class AuthUserEntity {
   final String email;
   final bool isFirstLogin;
 
-  AuthUserEntity({
+  const AuthUserEntity({
     required this.id,
     required this.email,
     required this.isFirstLogin,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../radar/presentation/pages/radar_page.dart';
 import '../../../radar/presentation/pages/kiss_me_page.dart';
 import '../../../chat/presentation/pages/chat_page.dart';
@@ -79,11 +80,11 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
 }
 
 // Widget simples para representar a tela de Ajustes com Perfil
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(title: const Text("Ajustes")),
       body: ListView(
@@ -117,6 +118,14 @@ class SettingsPage extends StatelessWidget {
                 context,
                 MaterialPageRoute(builder: (context) => const QuestionnairePage()),
               );
+            },
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+            title: const Text("Sair da conta", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w600)),
+            onTap: () {
+              ref.read(authProvider.notifier).logout();
             },
           ),
         ],

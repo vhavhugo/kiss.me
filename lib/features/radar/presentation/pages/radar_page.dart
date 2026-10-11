@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../providers/radar_provider.dart';
 import '../providers/radar_search_provider.dart';
 import '../widgets/profile_card.dart';
 import '../widgets/action_button.dart';
@@ -28,13 +29,28 @@ class _RadarPageState extends ConsumerState<RadarPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authState = ref.read(authProvider);
       if (authState.isOnline) {
-        ref.read(radarSearchProvider.notifier).startSearch(
-              authState.user!.id,
-              -23.5505,
-              -46.6333,
-            );
+        _startSearchWithCurrentLocation(authState.user!.id);
       }
     });
+  }
+
+  Future<void> _startSearchWithCurrentLocation(String userId) async {
+    try {
+      final position = await ref.read(locationServiceProvider).getCurrentPosition();
+      if (!mounted) return;
+      ref.read(radarSearchProvider.notifier).startSearch(
+            userId,
+            position.latitude,
+            position.longitude,
+          );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Ative a localização para encontrar pessoas próximas.'),
+        ),
+      );
+    }
   }
 
   @override
@@ -73,11 +89,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
         ref.read(authProvider.notifier).toggleOnlineStatus();
         final newAuthState = ref.read(authProvider);
         if (newAuthState.isOnline) {
-          ref.read(radarSearchProvider.notifier).startSearch(
-                newAuthState.user!.id,
-                -23.5505,
-                -46.6333,
-              );
+          _startSearchWithCurrentLocation(newAuthState.user!.id);
         } else {
           ref.read(radarSearchProvider.notifier).stopSearch();
         }

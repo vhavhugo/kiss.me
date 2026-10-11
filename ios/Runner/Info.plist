@@ -8,6 +8,8 @@
 	<string>Use a câmera para chamadas de vídeo.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Use o microfone para chamadas de vídeo.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Usamos sua localização para encontrar pessoas próximas de você no radar.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

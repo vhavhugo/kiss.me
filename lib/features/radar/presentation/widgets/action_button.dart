@@ -13,8 +13,8 @@ class ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
+    return Tooltip(
+      message: type.label,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -35,24 +35,25 @@ class ActionButton extends StatelessWidget {
                 ),
               ],
             ),
-            child: Icon(
-              _getIcon(),
-              color: _getColor(),
-              size: 32,
-            ),
+            child: Center(child: _buildSymbol()),
           ),
         ),
       ),
     );
   }
 
-  IconData _getIcon() {
-    switch (type) {
-      case ActionType.kiss: return Icons.face_retouching_natural;
-      case ActionType.hug: return Icons.favorite_outline;
-      case ActionType.handshake: return Icons.handshake_outlined;
-      case ActionType.drink: return Icons.local_bar_outlined;
+  Widget _buildSymbol() {
+    if (type == ActionType.kiss) {
+      return ClipOval(
+        child: Image.asset(
+          'assets/images/kiss_action_icon.png',
+          width: 58,
+          height: 58,
+          fit: BoxFit.cover,
+        ),
+      );
     }
+    return Text(type.emoji, style: const TextStyle(fontSize: 32));
   }
 
   Color _getColor() {
@@ -60,7 +61,7 @@ class ActionButton extends StatelessWidget {
       case ActionType.kiss: return Colors.pink;
       case ActionType.hug: return Colors.blue;
       case ActionType.handshake: return Colors.orange;
-      case ActionType.drink: return Colors.purple;
+      case ActionType.walk: return Colors.green;
     }
   }
 }

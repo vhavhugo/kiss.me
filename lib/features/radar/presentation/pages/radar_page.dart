@@ -6,6 +6,7 @@ import '../providers/radar_provider.dart';
 import '../providers/radar_search_provider.dart';
 import '../widgets/profile_card.dart';
 import '../widgets/action_button.dart';
+import '../widgets/interaction_actions.dart';
 import '../widgets/dissolving_km_animation.dart';
 import '../../domain/entities/interaction_entity.dart';
 
@@ -22,6 +23,7 @@ class RadarPage extends ConsumerStatefulWidget {
 
 class _RadarPageState extends ConsumerState<RadarPage> {
   final PageController _pageController = PageController(viewportFraction: 0.85);
+  int _currentIndex = 0;
 
   @override
   void initState() {
@@ -192,6 +194,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                     height: constraints.maxHeight * 0.65,
                     child: PageView.builder(
                       controller: _pageController,
+                      onPageChanged: (i) => _currentIndex = i,
                       itemCount: search.users.length,
                       itemBuilder: (context, index) {
                         return ProfileCard(user: search.users[index]);
@@ -228,26 +231,32 @@ class _RadarPageState extends ConsumerState<RadarPage> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         ActionButton(
-          type: ActionType.handshake,
-          onTap: () => _handleAction(ActionType.handshake),
+          type: ActionType.kiss,
+          onTap: () => _handleAction(ActionType.kiss),
         ),
         ActionButton(
           type: ActionType.hug,
           onTap: () => _handleAction(ActionType.hug),
         ),
         ActionButton(
-          type: ActionType.kiss,
-          onTap: () => _handleAction(ActionType.kiss),
+          type: ActionType.handshake,
+          onTap: () => _handleAction(ActionType.handshake),
         ),
         ActionButton(
-          type: ActionType.drink,
-          onTap: () => _handleAction(ActionType.drink),
+          type: ActionType.walk,
+          onTap: () => _handleAction(ActionType.walk),
         ),
       ],
     );
   }
 
   void _handleAction(ActionType type) {
-    // Modal implementation
+    final users = ref.read(radarSearchProvider).users;
+    sendInteractionFromUi(
+      context,
+      ref,
+      target: _currentIndex < users.length ? users[_currentIndex] : null,
+      type: type,
+    );
   }
 }

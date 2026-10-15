@@ -7,6 +7,9 @@ import '../../../radar/presentation/pages/kiss_me_page.dart';
 import '../../../chat/presentation/pages/chat_page.dart';
 
 import '../../../profile/presentation/pages/questionnaire_page.dart';
+import '../../../profile/presentation/pages/my_profile_page.dart';
+import '../../../profile/presentation/providers/profile_photo_provider.dart';
+import '../../../notifications/presentation/pages/notifications_page.dart';
 
 class MainNavigationPage extends ConsumerStatefulWidget {
   const MainNavigationPage({super.key});
@@ -85,23 +88,37 @@ class SettingsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final photo = ref.watch(profilePhotoProvider);
     return Scaffold(
       appBar: AppBar(title: const Text("Ajustes")),
       body: ListView(
         children: [
           ListTile(
-            leading: const CircleAvatar(child: Icon(Icons.person)),
+            leading: CircleAvatar(
+              backgroundImage: photo == null ? null : MemoryImage(photo),
+              child: photo == null ? const Icon(Icons.person) : null,
+            ),
             title: const Text("Meu Perfil"),
             subtitle: const Text("Editar fotos e bio"),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
-              // Navega para tela de edição de perfil
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const MyProfilePage()),
+              );
             },
           ),
           const Divider(),
-          const ListTile(
-            leading: Icon(Icons.notifications_outlined),
-            title: Text("Notificações"),
+          ListTile(
+            leading: const Icon(Icons.notifications_outlined),
+            title: const Text("Notificações"),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const NotificationsPage()),
+              );
+            },
           ),
           const ListTile(
             leading: Icon(Icons.security_outlined),

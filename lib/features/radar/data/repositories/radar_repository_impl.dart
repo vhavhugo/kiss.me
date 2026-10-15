@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../domain/entities/interaction_entity.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/radar_repository.dart';
 import '../datasources/radar_remote_datasource.dart';
@@ -78,7 +79,12 @@ class RadarRepositoryImpl implements RadarRepository {
 
   @override
   Future<bool> sendInteraction(dynamic interaction) async {
-    // Lógica para enviar o beijo/abraço/etc
+    final i = interaction as InteractionEntity;
+    await _supabase.from('interactions').insert({
+      'from_user_id': i.fromUserId,
+      'to_user_id': i.toUserId,
+      'type': i.type.name,
+    });
     return true;
   }
 }

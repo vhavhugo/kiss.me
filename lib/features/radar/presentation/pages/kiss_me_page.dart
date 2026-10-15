@@ -5,8 +5,10 @@ import '../../../../core/theme/app_colors.dart';
 import '../providers/radar_search_provider.dart';
 import '../widgets/profile_card.dart';
 import '../widgets/action_button.dart';
+import '../widgets/interaction_actions.dart';
 import '../widgets/dissolving_km_animation.dart';
 import '../../domain/entities/interaction_entity.dart';
+import '../../domain/entities/user_entity.dart';
 import '../widgets/ai_trust_system.dart';
 import '../../../../features/privacy/presentation/widgets/privacy_safe_indicator.dart';
 import '../../../../features/gamification/presentation/widgets/gamification_progress_bar.dart';
@@ -20,6 +22,7 @@ class KissMePage extends ConsumerStatefulWidget {
 
 class _KissMePageState extends ConsumerState<KissMePage> {
   final PageController _pageController = PageController(viewportFraction: 0.85);
+  int _currentIndex = 0;
 
   @override
   void initState() {
@@ -167,6 +170,7 @@ class _KissMePageState extends ConsumerState<KissMePage> {
                     height: constraints.maxHeight * 0.65,
                     child: PageView.builder(
                       controller: _pageController,
+                      onPageChanged: (i) => _currentIndex = i,
                       itemCount: search.users.length,
                       itemBuilder: (context, index) {
                         return ProfileCard(user: search.users[index]);
@@ -174,7 +178,7 @@ class _KissMePageState extends ConsumerState<KissMePage> {
                     ),
                   ),
                   const Spacer(),
-                  _buildActionButtonsRow(),
+                  _buildActionButtonsRow(search.users),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -185,25 +189,30 @@ class _KissMePageState extends ConsumerState<KissMePage> {
     );
   }
 
-  Widget _buildActionButtonsRow() {
+  Widget _buildActionButtonsRow(List<UserEntity> users) {
+    UserEntity? current() =>
+        _currentIndex < users.length ? users[_currentIndex] : null;
+    void send(ActionType type) => sendInteractionFromUi(context, ref,
+        target: current(), type: type);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         ActionButton(
-          type: ActionType.handshake,
-          onTap: () {},
+          type: ActionType.kiss,
+          onTap: () => send(ActionType.kiss),
         ),
         ActionButton(
           type: ActionType.hug,
-          onTap: () {},
+          onTap: () => send(ActionType.hug),
         ),
         ActionButton(
-          type: ActionType.kiss,
-          onTap: () {},
+          type: ActionType.handshake,
+          onTap: () => send(ActionType.handshake),
         ),
         ActionButton(
-          type: ActionType.drink,
-          onTap: () {},
+          type: ActionType.walk,
+          onTap: () => send(ActionType.walk),
         ),
       ],
     );

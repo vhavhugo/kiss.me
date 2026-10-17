@@ -65,7 +65,9 @@ class RadarSearchNotifier extends Notifier<RadarSearchState> {
     );
 
     if (users.isNotEmpty) {
-      state = state.copyWith(users: users, isSearching: false);
+      final sorted = [...users]
+        ..sort((a, b) => a.distanceInMeters.compareTo(b.distanceInMeters));
+      state = state.copyWith(users: sorted, isSearching: false);
       _expansionTimer?.cancel();
     } else {
       if (state.currentRadiusKm < 50.0) {

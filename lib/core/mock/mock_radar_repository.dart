@@ -9,6 +9,14 @@ class MockRadarRepository implements RadarRepository {
   final List<UserEntity> _mockUsers = [
     UserEntity(
       id: 'mock-user-1',
+      photos: [
+        'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=800&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=800&auto=format&fit=crop&q=80',
+      ],
+      city: 'São Paulo, SP',
+      profession: 'Designer de produto',
+      education: 'MBA',
+      dream: 'Dar a volta ao mundo conhecendo cafés em cada país.',
       name: 'Camila, 24',
       photoUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&auto=format&fit=crop&q=80',
       distanceInMeters: 45.0,
@@ -31,6 +39,14 @@ class MockRadarRepository implements RadarRepository {
     ),
     UserEntity(
       id: 'mock-user-2',
+      photos: [
+        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=800&auto=format&fit=crop&q=80',
+      ],
+      city: 'São Paulo, SP',
+      profession: 'Engenheiro de software',
+      education: 'Mestrado',
+      dream: 'Abrir uma startup que ajude pessoas a se conectarem de verdade.',
       name: 'Lucas, 26',
       photoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80',
       distanceInMeters: 120.0,
@@ -52,6 +68,14 @@ class MockRadarRepository implements RadarRepository {
     ),
     UserEntity(
       id: 'mock-user-3',
+      photos: [
+        'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800&auto=format&fit=crop&q=80',
+      ],
+      city: 'Guarulhos, SP',
+      profession: 'Estudante de design',
+      education: 'Faculdade',
+      dream: 'Dirigir um curta-metragem premiado.',
       name: 'Beatriz, 23',
       photoUrl: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&auto=format&fit=crop&q=80',
       distanceInMeters: 280.0,

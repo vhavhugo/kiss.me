@@ -6,6 +6,7 @@ class ChatMessage {
   final ChatMessageType type;
   final String content;
   final DateTime createdAt;
+  final String? fileName;
 
   const ChatMessage({
     required this.id,
@@ -13,5 +14,6 @@ class ChatMessage {
     required this.type,
     required this.content,
     required this.createdAt,
+    this.fileName,
   });
 }

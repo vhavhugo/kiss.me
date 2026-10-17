@@ -5,9 +5,11 @@
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Use a câmera para chamadas de vídeo.</string>
+	<string>Usamos a câmera para chamadas e mensagens de vídeo.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Use o microfone para chamadas de vídeo.</string>
+	<string>Usamos o microfone para chamadas, mensagens de áudio e vídeo.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Usamos sua galeria para enviar vídeos e fotos.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Usamos sua localização para encontrar pessoas próximas de você no radar.</string>
 	<key>CFBundleDevelopmentRegion</key>

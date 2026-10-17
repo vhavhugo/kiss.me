@@ -27,6 +27,19 @@ extension ActionTypeLabels on ActionType {
     }
   }
 
+  String get receivedMessage {
+    switch (this) {
+      case ActionType.kiss:
+        return 'te enviou um beijo';
+      case ActionType.hug:
+        return 'te enviou um abraço';
+      case ActionType.handshake:
+        return 'te estendeu a mão';
+      case ActionType.walk:
+        return 'te convidou para um passeio no bosque';
+    }
+  }
+
   String get sentMessage {
     switch (this) {
       case ActionType.kiss:
@@ -63,12 +76,16 @@ class InteractionRecord {
   final ActionType type;
   final DateTime createdAt;
 
+  /// true quando a outra pessoa interagiu com você.
+  final bool incoming;
+
   const InteractionRecord({
     required this.toUserId,
     required this.toUserName,
     required this.toUserPhotoUrl,
     required this.type,
     required this.createdAt,
+    this.incoming = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -77,6 +94,7 @@ class InteractionRecord {
         'toUserPhotoUrl': toUserPhotoUrl,
         'type': type.name,
         'createdAt': createdAt.toIso8601String(),
+        'incoming': incoming,
       };
 
   factory InteractionRecord.fromJson(Map<String, dynamic> json) {
@@ -90,6 +108,7 @@ class InteractionRecord {
       ),
       createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ??
           DateTime.now(),
+      incoming: json['incoming'] as bool? ?? false,
     );
   }
 }

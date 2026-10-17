@@ -66,6 +66,7 @@ class ChatRepositoryImpl implements ChatRepository {
       type: ChatMessageType.values.byName(row['message_type'] as String),
       content: row['content'] as String,
       createdAt: DateTime.parse(row['created_at'] as String),
+      fileName: row['file_name'] as String?,
     );
   }
 }

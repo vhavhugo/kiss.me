@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/radar_search_provider.dart';
-import '../widgets/profile_card.dart';
+import '../widgets/profile_detail_view.dart';
 import '../widgets/action_button.dart';
 import '../widgets/interaction_actions.dart';
 import '../widgets/dissolving_km_animation.dart';
@@ -21,7 +21,7 @@ class KissMePage extends ConsumerStatefulWidget {
 }
 
 class _KissMePageState extends ConsumerState<KissMePage> {
-  final PageController _pageController = PageController(viewportFraction: 0.85);
+  final PageController _pageController = PageController();
   int _currentIndex = 0;
 
   @override
@@ -156,44 +156,57 @@ class _KissMePageState extends ConsumerState<KissMePage> {
       );
     }
 
-    return LayoutBuilder(
+    return Column(
       key: const ValueKey('results_content_km'),
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: IntrinsicHeight(
-              child: Column(
-                children: [
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    height: constraints.maxHeight * 0.65,
-                    child: PageView.builder(
-                      controller: _pageController,
-                      onPageChanged: (i) => _currentIndex = i,
-                      itemCount: search.users.length,
-                      itemBuilder: (context, index) {
-                        return ProfileCard(user: search.users[index]);
-                      },
-                    ),
-                  ),
-                  const Spacer(),
-                  _buildActionButtonsRow(search.users),
-                  const SizedBox(height: 40),
-                ],
-              ),
-            ),
+      children: [
+        Expanded(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return PageView.builder(
+                controller: _pageController,
+                onPageChanged: (i) => _currentIndex = i,
+                itemCount: search.users.length,
+                itemBuilder: (context, index) {
+                  return ProfileDetailView(
+                    key: PageStorageKey('profile_${search.users[index].id}'),
+                    user: search.users[index],
+                    heroHeight: constraints.maxHeight,
+                  );
+                },
+              );
+            },
           ),
-        );
-      },
+        ),
+        Container(
+          color: AppColors.background,
+          padding: const EdgeInsets.only(top: 12, bottom: 16),
+          child: SafeArea(
+            top: false,
+            child: _buildActionButtonsRow(search.users),
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildActionButtonsRow(List<UserEntity> users) {
     UserEntity? current() =>
         _currentIndex < users.length ? users[_currentIndex] : null;
-    void send(ActionType type) => sendInteractionFromUi(context, ref,
-        target: current(), type: type);
+    Future<void> send(ActionType type) async {
+      await sendInteractionFromUi(context, ref,
+          target: current(), type: type);
+      if (!mounted || !_pageController.hasClients) return;
+      if (_currentIndex + 1 < users.length) {
+        _pageController.nextPage(
+          duration: const Duration(milliseconds: 450),
+          curve: Curves.easeOutCubic,
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Não há mais pessoas por perto agora.')),
+        );
+      }
+    }
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,

@@ -77,7 +77,9 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
                         : Text(r.type.emoji,
                             style: const TextStyle(fontSize: 22)),
                   ),
-                  title: Text('${r.type.sentMessage} ${r.toUserName}'),
+                  title: Text(r.incoming
+                      ? '${r.toUserName} ${r.type.receivedMessage}'
+                      : '${r.type.sentMessage} ${r.toUserName}'),
                   subtitle: Text(_time(r.createdAt)),
                   trailing: r.toUserPhotoUrl.isEmpty
                       ? null

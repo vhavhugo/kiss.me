@@ -379,3 +379,87 @@ class _AudioMessageBubbleState extends State<AudioMessageBubble> {
     );
   }
 }
+
+ImageProvider? _imageProviderFor(String source) {
+  if (source.startsWith('http')) return NetworkImage(source);
+  if (!kIsWeb && source.startsWith('/')) return FileImage(File(source));
+  return null;
+}
+
+/// Miniatura da foto dentro da conversa; tocar abre em tela cheia com zoom.
+class ImageMessagePreview extends StatelessWidget {
+  final String source;
+  final String? fileName;
+
+  const ImageMessagePreview({super.key, required this.source, this.fileName});
+
+  @override
+  Widget build(BuildContext context) {
+    final image = _imageProviderFor(source);
+    if (image == null) {
+      return const SizedBox(
+        width: 220,
+        height: 120,
+        child: Center(
+          child: Text('Foto indisponível', style: TextStyle(color: Colors.white70)),
+        ),
+      );
+    }
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ImageViewerPage(image: image, title: fileName),
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 260, maxHeight: 320, minWidth: 160, minHeight: 120),
+          child: Image(
+            image: image,
+            fit: BoxFit.cover,
+            loadingBuilder: (_, child, progress) => progress == null
+                ? child
+                : const SizedBox(
+                    width: 220,
+                    height: 160,
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+            errorBuilder: (_, _, _) => const SizedBox(
+              width: 220,
+              height: 120,
+              child: Center(child: Icon(Icons.broken_image_outlined, color: Colors.white70)),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ImageViewerPage extends StatelessWidget {
+  final ImageProvider image;
+  final String? title;
+
+  const ImageViewerPage({super.key, required this.image, this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        title: Text(title ?? 'Foto', overflow: TextOverflow.ellipsis),
+      ),
+      body: Center(
+        child: InteractiveViewer(
+          minScale: 1,
+          maxScale: 5,
+          child: Image(image: image, fit: BoxFit.contain),
+        ),
+      ),
+    );
+  }
+}

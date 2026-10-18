@@ -10,6 +10,7 @@ import '../widgets/dissolving_km_animation.dart';
 import '../../domain/entities/interaction_entity.dart';
 import '../../domain/entities/user_entity.dart';
 import '../widgets/ai_trust_system.dart';
+import '../../../safety/presentation/providers/safety_provider.dart';
 import '../../../../features/privacy/presentation/widgets/privacy_safe_indicator.dart';
 import '../../../../features/gamification/presentation/widgets/gamification_progress_bar.dart';
 
@@ -43,7 +44,11 @@ class _KissMePageState extends ConsumerState<KissMePage> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
-    final searchState = ref.watch(radarSearchProvider);
+    final blocked = ref.watch(blockedUsersProvider);
+    final rawSearch = ref.watch(radarSearchProvider);
+    final searchState = rawSearch.copyWith(
+      users: rawSearch.users.where((u) => !blocked.contains(u.id)).toList(),
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -193,9 +198,9 @@ class _KissMePageState extends ConsumerState<KissMePage> {
     UserEntity? current() =>
         _currentIndex < users.length ? users[_currentIndex] : null;
     Future<void> send(ActionType type) async {
-      await sendInteractionFromUi(context, ref,
+      final sent = await sendInteractionFromUi(context, ref,
           target: current(), type: type);
-      if (!mounted || !_pageController.hasClients) return;
+      if (!sent || !mounted || !_pageController.hasClients) return;
       if (_currentIndex + 1 < users.length) {
         _pageController.nextPage(
           duration: const Duration(milliseconds: 450),

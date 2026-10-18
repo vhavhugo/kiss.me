@@ -8,12 +8,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
+import '../../../../core/config/app_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/chat_message.dart';
 import '../providers/chat_provider.dart';
 import '../widgets/conversation_avatar.dart';
 import '../widgets/media_messages.dart';
+import '../../../radar/domain/entities/interaction_entity.dart';
+import '../../../radar/presentation/providers/interactions_provider.dart';
+import '../../../safety/presentation/widgets/safety_sheet.dart';
 import 'video_call_page.dart';
 
 class ConversationPage extends ConsumerStatefulWidget {
@@ -46,6 +50,7 @@ class _ConversationPageState extends ConsumerState<ConversationPage> {
   Duration _recordElapsed = Duration.zero;
   Timer? _recordTimer;
   static const _maxRecording = Duration(minutes: 5);
+  static const _ephemeralDuration = Duration(hours: 24);
 
   @override
   void initState() {
@@ -66,6 +71,14 @@ class _ConversationPageState extends ConsumerState<ConversationPage> {
   Widget build(BuildContext context) {
     final messages = ref.watch(chatMessagesProvider(_conversationId));
     final currentUserId = ref.watch(authProvider).user?.id ?? 'anonymous';
+    final dates = ref
+        .watch(interactionsProvider)
+        .where((r) => r.toUserId == widget.peerId && r.type == ActionType.walk)
+        .map((r) => r.createdAt)
+        .toList()
+      ..sort();
+    final expiresAt =
+        dates.isEmpty ? null : dates.last.add(_ephemeralDuration);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -92,11 +105,24 @@ class _ConversationPageState extends ConsumerState<ConversationPage> {
         elevation: 0,
         actions: [
           IconButton(
-            tooltip: 'Enviar vídeo do aparelho ou da nuvem',
-            icon: const Icon(Icons.video_library_outlined),
+            tooltip: 'Enviar foto ou vídeo do aparelho ou da nuvem',
+            icon: const Icon(Icons.perm_media_outlined),
             onPressed: _isSending
                 ? null
                 : () => _pickExistingVideo(currentUserId),
+          ),
+          IconButton(
+            tooltip: 'Denunciar ou bloquear',
+            icon: const Icon(Icons.shield_outlined),
+            onPressed: () async {
+              final blocked = await showSafetySheet(
+                context,
+                ref,
+                userId: widget.peerId,
+                userName: widget.peerName,
+              );
+              if (blocked && context.mounted) Navigator.pop(context);
+            },
           ),
           IconButton(
             tooltip: 'Iniciar chamada de vídeo',
@@ -108,6 +134,8 @@ class _ConversationPageState extends ConsumerState<ConversationPage> {
                   callId: '${_conversationId}_${DateTime.now().millisecondsSinceEpoch}',
                   userId: currentUserId,
                   isCaller: true,
+                  isMock: ref.read(isMockModeProvider),
+                  peerName: widget.peerName,
                 ),
               ),
             ),
@@ -120,6 +148,7 @@ class _ConversationPageState extends ConsumerState<ConversationPage> {
             messages: messages,
             onRetry: () => ref.invalidate(chatMessagesProvider(_conversationId)),
           ),
+          if (expiresAt != null) _EphemeralBanner(expiresAt: expiresAt),
           Expanded(
             child: messages.when(
               loading: () => const Center(child: CircularProgressIndicator()),
@@ -134,7 +163,20 @@ class _ConversationPageState extends ConsumerState<ConversationPage> {
               ),
             ),
           ),
-          _buildComposer(currentUserId),
+          if (expiresAt != null && !DateTime.now().isBefore(expiresAt))
+            const SafeArea(
+              top: false,
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: Text(
+                  'O tempo desta conversa acabou. Que tal marcar o encontro? 🥂',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.textSecondary),
+                ),
+              ),
+            )
+          else
+            _buildComposer(currentUserId),
         ],
       ),
     );
@@ -378,19 +420,27 @@ class _ConversationPageState extends ConsumerState<ConversationPage> {
     }
   }
 
+  static const _imageExtensions = {
+    'jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'heic', 'heif',
+  };
+
   Future<void> _pickExistingVideo(String senderId) async {
     final result = await FilePicker.platform.pickFiles(
-      type: FileType.video,
+      type: FileType.media,
       withData: true,
     );
     if (!mounted || result == null || result.files.isEmpty) return;
     final file = result.files.single;
     final bytes = file.bytes;
     if (bytes == null || bytes.isEmpty) {
-      _showError('Não foi possível ler o vídeo selecionado.');
+      _showError('Não foi possível ler o arquivo selecionado.');
       return;
     }
-    await _sendMediaBytes(senderId, ChatMessageType.video, file.name, bytes);
+    final ext = (file.extension ?? file.name.split('.').last).toLowerCase();
+    final type = _imageExtensions.contains(ext)
+        ? ChatMessageType.image
+        : ChatMessageType.video;
+    await _sendMediaBytes(senderId, type, file.name, bytes);
   }
 
   Future<void> _sendMediaBytes(
@@ -463,7 +513,8 @@ class _MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final foreground = isMine ? Colors.white : AppColors.textPrimary;
-    final isVideo = message.type == ChatMessageType.video;
+    final isVideo = message.type == ChatMessageType.video ||
+        message.type == ChatMessageType.image;
     return Align(
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -479,6 +530,10 @@ class _MessageBubble extends StatelessWidget {
         ),
         child: switch (message.type) {
           ChatMessageType.text => _MessageText(message: message, foreground: foreground),
+          ChatMessageType.image => ImageMessagePreview(
+              source: message.content,
+              fileName: message.fileName,
+            ),
           ChatMessageType.video => VideoMessagePreview(
               source: message.content,
               fileName: message.fileName,
@@ -552,6 +607,51 @@ class _ConnectionBanner extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+/// Conversas de "Sair juntos" têm prazo: o objetivo é encontrar de verdade.
+class _EphemeralBanner extends StatefulWidget {
+  final DateTime expiresAt;
+  const _EphemeralBanner({required this.expiresAt});
+
+  @override
+  State<_EphemeralBanner> createState() => _EphemeralBannerState();
+}
+
+class _EphemeralBannerState extends State<_EphemeralBanner> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final left = widget.expiresAt.difference(DateTime.now());
+    final expired = left.isNegative;
+    String two(int n) => n.toString().padLeft(2, '0');
+    final text = expired
+        ? 'Conversa encerrada'
+        : '🥂 Conversa temporária · ${two(left.inHours)}:${two(left.inMinutes % 60)}:${two(left.inSeconds % 60)} para combinar o encontro';
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: expired ? Colors.grey.shade300 : Colors.amber.shade100,
+      child: Text(text,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
     );
   }
 }

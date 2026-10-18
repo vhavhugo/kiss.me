@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../safety/presentation/providers/safety_provider.dart';
 import '../../../radar/domain/entities/interaction_entity.dart';
 import '../../../radar/presentation/providers/interactions_provider.dart';
 import '../../domain/entities/chat_message.dart';
@@ -97,7 +98,11 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    final records = ref.watch(interactionsProvider);
+    final blocked = ref.watch(blockedUsersProvider);
+    final records = ref
+        .watch(interactionsProvider)
+        .where((r) => !blocked.contains(r.toUserId))
+        .toList();
     final contacts = _contacts(records);
 
     return Scaffold(
@@ -210,6 +215,8 @@ class _ContactTile extends ConsumerWidget {
         return '$prefix🎤 Áudio';
       case ChatMessageType.video:
         return '$prefix🎬 Vídeo';
+      case ChatMessageType.image:
+        return '$prefix📷 Foto';
     }
   }
 

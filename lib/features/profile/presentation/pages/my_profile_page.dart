@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/profile_photo_provider.dart';
+import 'photo_verification_page.dart';
 
 class MyProfilePage extends ConsumerStatefulWidget {
   const MyProfilePage({super.key});
@@ -47,6 +48,16 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
   String? _gender;
   String? _education;
   bool _acceptSponsor = true;
+  final List<String> _icebreakers = [];
+  final TextEditingController _customQuestion = TextEditingController();
+  static const int _maxIcebreakers = 3;
+  static const List<String> _suggestedQuestions = [
+    'O que você faria se eu aceitasse um encontro com você?',
+    'Qual o seu encontro ideal?',
+    'Qual foi a última coisa que te fez rir de verdade?',
+    'Qual viagem você nunca esqueceu?',
+    'Que música define o seu momento?',
+  ];
 
   static const String _prefsKey = 'my_profile_v1';
 
@@ -74,6 +85,9 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
       final education = data['education'] as String?;
       _education = _educationLevels.contains(education) ? education : null;
       _acceptSponsor = data['acceptSponsor'] as bool? ?? true;
+      _icebreakers
+        ..clear()
+        ..addAll((data['icebreakers'] as List? ?? []).cast<String>());
       _photos
         ..clear()
         ..addAll((data['photos'] as List? ?? [])
@@ -95,6 +109,7 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
         'education': _education,
         'birthDate': _birthDate?.toIso8601String(),
         'acceptSponsor': _acceptSponsor,
+        'icebreakers': _icebreakers,
         'photos': _photos.map(base64Encode).toList(),
       }),
     );
@@ -107,6 +122,7 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
     _dreamController.dispose();
     _cityController.dispose();
     _professionController.dispose();
+    _customQuestion.dispose();
     super.dispose();
   }
 
@@ -361,6 +377,69 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                       'Permite que alguém apoie a realização do seu sonho.'),
                   value: _acceptSponsor,
                   onChanged: (v) => setState(() => _acceptSponsor = v),
+                ),
+              ),
+              _section('Caderno de perguntas',
+                  subtitle:
+                      'Quem quiser te enviar um ícone precisa responder uma delas. Escolha até $_maxIcebreakers.'),
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: [
+                  for (final q in {..._suggestedQuestions, ..._icebreakers})
+                    FilterChip(
+                      label: Text(q),
+                      selected: _icebreakers.contains(q),
+                      onSelected: (on) => setState(() {
+                        if (on) {
+                          if (_icebreakers.length < _maxIcebreakers) {
+                            _icebreakers.add(q);
+                          }
+                        } else {
+                          _icebreakers.remove(q);
+                        }
+                      }),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _customQuestion,
+                maxLength: 120,
+                decoration: InputDecoration(
+                  hintText: 'Escreva sua própria pergunta',
+                  border: const OutlineInputBorder(),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.add_circle_outline),
+                    onPressed: () {
+                      final q = _customQuestion.text.trim();
+                      if (q.length < 8 ||
+                          _icebreakers.length >= _maxIcebreakers ||
+                          _icebreakers.contains(q)) {
+                        return;
+                      }
+                      setState(() {
+                        _icebreakers.add(q);
+                        _customQuestion.clear();
+                      });
+                    },
+                  ),
+                ),
+              ),
+              _section('Verificação'),
+              Card(
+                margin: EdgeInsets.zero,
+                child: ListTile(
+                  leading: const Icon(Icons.verified_user_outlined,
+                      color: AppColors.primary),
+                  title: const Text('Verificar meu perfil'),
+                  subtitle: const Text('Tire uma selfie para ganhar o selo'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const PhotoVerificationPage()),
+                  ),
                 ),
               ),
               const SizedBox(height: 24),

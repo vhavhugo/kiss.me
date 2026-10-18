@@ -9,11 +9,17 @@ class VideoCallPage extends StatefulWidget {
   final String userId;
   final bool isCaller;
 
+  /// Modo demonstração: sem Supabase, só mostra a câmera local.
+  final bool isMock;
+  final String peerName;
+
   const VideoCallPage({
     super.key,
     required this.callId,
     required this.userId,
     required this.isCaller,
+    this.isMock = false,
+    this.peerName = '',
   });
 
   @override
@@ -23,7 +29,7 @@ class VideoCallPage extends StatefulWidget {
 class _VideoCallPageState extends State<VideoCallPage> {
   final _localRenderer = RTCVideoRenderer();
   final _remoteRenderer = RTCVideoRenderer();
-  final _supabase = Supabase.instance.client;
+  SupabaseClient? _supabase;
   RTCPeerConnection? _peerConnection;
   MediaStream? _localStream;
   RealtimeChannel? _signalChannel;
@@ -41,7 +47,7 @@ class _VideoCallPageState extends State<VideoCallPage> {
   @override
   void dispose() {
     _signalSubscription?.cancel();
-    if (_signalChannel != null) _supabase.removeChannel(_signalChannel!);
+    if (_signalChannel != null) _supabase?.removeChannel(_signalChannel!);
     _localStream?.dispose();
     _peerConnection?.close();
     _localRenderer.dispose();
@@ -78,6 +84,14 @@ class _VideoCallPageState extends State<VideoCallPage> {
           });
         }
       };
+      if (widget.isMock) {
+        if (mounted) {
+          setState(() => _status =
+              'Modo demonstração: ${widget.peerName.isEmpty ? 'a outra pessoa' : widget.peerName} não está conectada. Ligue com o Supabase ativo para chamadas reais.');
+        }
+        return;
+      }
+      _supabase = Supabase.instance.client;
       _listenForSignals();
       if (widget.isCaller) {
         final offer = await _peerConnection!.createOffer();
@@ -86,12 +100,15 @@ class _VideoCallPageState extends State<VideoCallPage> {
       }
       if (mounted) setState(() => _status = 'Conectando com segurança...');
     } catch (error) {
-      if (mounted) setState(() => _status = 'Não foi possível iniciar a chamada.');
+      if (mounted) {
+        setState(() => _status =
+            'Não foi possível iniciar a chamada. Verifique as permissões de câmera e microfone.');
+      }
     }
   }
 
   void _listenForSignals() {
-    _signalSubscription = _supabase
+    _signalSubscription = _supabase!
         .from('call_signals')
         .stream(primaryKey: ['id'])
         .eq('call_id', widget.callId)
@@ -124,7 +141,7 @@ class _VideoCallPageState extends State<VideoCallPage> {
   }
 
   Future<void> _sendSignal(String type, Map<String, dynamic> payload) {
-    return _supabase.from('call_signals').insert({
+    return _supabase!.from('call_signals').insert({
       'call_id': widget.callId,
       'sender_id': widget.userId,
       'signal_type': type,

@@ -35,6 +35,7 @@ class InteractionsNotifier extends Notifier<List<InteractionRecord>> {
     required String fromUserId,
     required UserEntity target,
     required ActionType type,
+    String answer = '',
   }) async {
     if (_ownerId != fromUserId) await load(fromUserId);
 
@@ -44,6 +45,7 @@ class InteractionsNotifier extends Notifier<List<InteractionRecord>> {
       toUserPhotoUrl: target.photoUrl,
       type: type,
       createdAt: DateTime.now(),
+      answer: answer,
     );
     state = [record, ...state];
 
@@ -61,6 +63,7 @@ class InteractionsNotifier extends Notifier<List<InteractionRecord>> {
               fromUserId: fromUserId,
               toUserId: target.id,
               type: type,
+              answer: answer,
             ),
           );
     } catch (_) {

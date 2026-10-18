@@ -20,7 +20,9 @@ class RadarRemoteDataSource {
   }
 
   /// Busca os IDs dos usuários mais próximos no Redis
-  Future<List<String>> getNearbyUserIds(double lat, double lng, double radiusKm) async {
+  /// Retorna id -> distância em metros, já do mais próximo ao mais distante.
+  Future<Map<String, double>> getNearbyUserDistances(
+      double lat, double lng, double radiusKm) async {
     try {
       final response = await _supabase.functions.invoke(
         'search-nearby',
@@ -28,12 +30,19 @@ class RadarRemoteDataSource {
       );
 
       if (response.status == 200) {
-        return List<String>.from(response.data['ids']);
+        final ids = List<String>.from(response.data['ids'] ?? const []);
+        final dist = (response.data['distances'] as List? ?? const [])
+            .map((d) => (d as num).toDouble())
+            .toList();
+        return {
+          for (var i = 0; i < ids.length; i++)
+            ids[i]: i < dist.length ? dist[i] : 0.0,
+        };
       }
-      return [];
+      return {};
     } catch (e) {
       debugPrint('Falha ao buscar pessoas próximas: $e');
-      return [];
+      return {};
     }
   }
 }

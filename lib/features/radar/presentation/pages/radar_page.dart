@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../../../profile/presentation/pages/photo_verification_page.dart';
+import '../../../profile/presentation/providers/verification_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/radar_provider.dart';
 import '../providers/radar_search_provider.dart';
-import '../widgets/profile_card.dart';
 import '../widgets/action_button.dart';
 import '../widgets/interaction_actions.dart';
 import '../widgets/dissolving_km_animation.dart';
 import '../../domain/entities/interaction_entity.dart';
 
 import '../widgets/ai_trust_system.dart';
+import '../../domain/entities/user_entity.dart';
+import '../../../profile/domain/entities/profile_authenticity_entity.dart';
+import '../../../safety/presentation/providers/safety_provider.dart';
+import '../../../safety/presentation/widgets/safety_sheet.dart';
 import '../../../../features/privacy/presentation/widgets/privacy_safe_indicator.dart';
 import '../../../../features/gamification/presentation/widgets/gamification_progress_bar.dart';
 
@@ -22,8 +28,8 @@ class RadarPage extends ConsumerStatefulWidget {
 }
 
 class _RadarPageState extends ConsumerState<RadarPage> {
-  final PageController _pageController = PageController(viewportFraction: 0.85);
-  int _currentIndex = 0;
+  int _selected = 0;
+  final Set<String> _done = {};
 
   @override
   void initState() {
@@ -38,13 +44,13 @@ class _RadarPageState extends ConsumerState<RadarPage> {
 
   Future<void> _startSearchWithCurrentLocation(String userId) async {
     try {
-      final position = await ref.read(locationServiceProvider).getCurrentPosition();
+      final position = await ref
+          .read(locationServiceProvider)
+          .getCurrentPosition();
       if (!mounted) return;
-      ref.read(radarSearchProvider.notifier).startSearch(
-            userId,
-            position.latitude,
-            position.longitude,
-          );
+      ref
+          .read(radarSearchProvider.notifier)
+          .startSearch(userId, position.latitude, position.longitude);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -58,7 +64,13 @@ class _RadarPageState extends ConsumerState<RadarPage> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
-    final searchState = ref.watch(radarSearchProvider);
+    final blocked = ref.watch(blockedUsersProvider);
+    final rawSearch = ref.watch(radarSearchProvider);
+    final searchState = rawSearch.copyWith(
+      users: rawSearch.users
+          .where((u) => !blocked.contains(u.id) && !_done.contains(u.id))
+          .toList(),
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -109,12 +121,14 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                       color: AppColors.online.withAlpha(100),
                       blurRadius: 12,
                       spreadRadius: 2,
-                    )
+                    ),
                   ]
                 : [],
           ),
           child: Icon(
-            auth.isOnline ? Icons.radar_rounded : Icons.power_settings_new_rounded,
+            auth.isOnline
+                ? Icons.radar_rounded
+                : Icons.power_settings_new_rounded,
             size: 16,
             color: Colors.white,
           ),
@@ -138,7 +152,8 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                   const SizedBox(height: 30),
                   // Sistema de Confiança Híbrido: Combina Local e Global (Alam, 2021)
                   const AiTrustSystem(
-                    localJustification: "Fique on-line para que nossa tecnologia encontre afinidades baseadas em seus interesses reais.",
+                    localJustification:
+                        "Fique on-line para que nossa tecnologia encontre afinidades baseadas em seus interesses reais.",
                     score: 0.0,
                   ),
                   const SizedBox(height: 10),
@@ -154,9 +169,11 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                   ),
                   const SizedBox(height: 30),
                   Text(
-                    !auth.isOnline ? "Você está invisível" : "Procurando conexões reais...",
+                    !auth.isOnline
+                        ? "Você está invisível"
+                        : "Procurando conexões reais...",
                     style: const TextStyle(
-                      fontSize: 20, 
+                      fontSize: 20,
                       fontWeight: FontWeight.w600,
                       color: Colors.black54,
                     ),
@@ -165,9 +182,9 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40),
                     child: Text(
-                      !auth.isOnline 
-                        ? "Fique on-line para que o radar encontre pessoas próximas a você agora."
-                        : "Estamos varrendo a área para encontrar os 3 perfis mais compatíveis.",
+                      !auth.isOnline
+                          ? "Fique on-line para que o radar encontre pessoas próximas a você agora."
+                          : "Estamos varrendo a área para encontrar os 3 perfis mais compatíveis.",
                       textAlign: TextAlign.center,
                       style: const TextStyle(color: Colors.black38),
                     ),
@@ -180,83 +197,356 @@ class _RadarPageState extends ConsumerState<RadarPage> {
       );
     }
 
-    return LayoutBuilder(
+    final table = search.users.take(3).toList();
+    if (table.isEmpty) return _buildEmptyTable();
+    final selected = _selected.clamp(0, table.length - 1);
+    final current = table[selected];
+
+    return SingleChildScrollView(
       key: const ValueKey('results_content'),
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: IntrinsicHeight(
-              child: Column(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+      child: Column(
+        children: [
+          const Text(
+            'Sua mesa',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.2,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 2),
+          const Text(
+            'Quem aqui pode render um beijo? Toque numa carta e escolha.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 12),
+          if (!ref.watch(verificationProvider)) _buildVerifyBanner(),
+          const SizedBox(height: 4),
+          SizedBox(
+            height: 270,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onHorizontalDragEnd: (d) {
+                final v = d.primaryVelocity ?? 0;
+                if (v.abs() < 250 || table.length < 2) return;
+                HapticFeedback.selectionClick();
+                // Deslizar para a esquerda traz a próxima carta; para a direita, a anterior.
+                setState(
+                  () => _selected =
+                      (selected + (v < 0 ? 1 : -1) + table.length) %
+                      table.length,
+                );
+              },
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    height: constraints.maxHeight * 0.65,
-                    child: PageView.builder(
-                      controller: _pageController,
-                      onPageChanged: (i) => _currentIndex = i,
-                      itemCount: search.users.length,
-                      itemBuilder: (context, index) {
-                        return ProfileCard(user: search.users[index]);
-                      },
+                  for (var i = 0; i < table.length; i++)
+                    Expanded(
+                      flex: i == selected ? 5 : 3,
+                      child: _TableCard(
+                        user: table[i],
+                        selected: i == selected,
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          setState(() => _selected = i);
+                        },
+                      ),
                     ),
-                  ),
-                  const Spacer(),
-                  TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0.0, end: 1.0),
-                    duration: const Duration(milliseconds: 800),
-                    curve: Curves.easeOutBack,
-                    builder: (context, value, child) {
-                      return Transform.translate(
-                        offset: Offset(0, 30 * (1 - value)),
-                        child: Opacity(
-                          opacity: value,
-                          child: _buildActionButtonsRow(),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 40),
                 ],
               ),
             ),
           ),
-        );
-      },
+          const SizedBox(height: 16),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            transitionBuilder: (child, anim) => FadeTransition(
+              opacity: anim,
+              child: SlideTransition(
+                position: Tween(
+                  begin: const Offset(0, .08),
+                  end: Offset.zero,
+                ).animate(anim),
+                child: child,
+              ),
+            ),
+            child: KeyedSubtree(
+              key: ValueKey(current.id),
+              child: _buildSelectedInfo(current),
+            ),
+          ),
+          const SizedBox(height: 20),
+          _buildActionButtonsRow(current),
+          const SizedBox(height: 8),
+          const Text(
+            'Você responde uma pergunta do perfil antes de enviar.',
+            style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildActionButtonsRow() {
+  Widget _buildVerifyBanner() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: Colors.blue.withAlpha(20),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: ListTile(
+        dense: true,
+        leading: const Icon(Icons.verified_user_outlined, color: Colors.blue),
+        title: const Text(
+          'Verifique seu perfil',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
+        subtitle: const Text('Ganhe o selo azul e mais confiança.'),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const PhotoVerificationPage()),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyTable() {
+    return Center(
+      key: const ValueKey('empty_table'),
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('🃏', style: TextStyle(fontSize: 56)),
+            const SizedBox(height: 12),
+            const Text(
+              'A mesa está vazia',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Você jogou todas as cartas por aqui. Procure novas pessoas por perto.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+              onPressed: () {
+                setState(() {
+                  _done.clear();
+                  _selected = 0;
+                });
+                final auth = ref.read(authProvider);
+                if (auth.user != null) {
+                  _startSearchWithCurrentLocation(auth.user!.id);
+                }
+              },
+              icon: const Icon(Icons.refresh),
+              label: const Text('Procurar de novo'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSelectedInfo(UserEntity user) {
+    final verified = user.authenticity.level == AuthenticityLevel.verified;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 12, 4, 12),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.black12),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        user.name,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    if (verified) ...[
+                      const SizedBox(width: 6),
+                      const Icon(Icons.verified, color: Colors.blue, size: 18),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${_formatDistance(user.distanceInMeters)} de você',
+                  style: const TextStyle(color: AppColors.textSecondary),
+                ),
+                if (user.bio.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(user.bio, maxLines: 2, overflow: TextOverflow.ellipsis),
+                ],
+                if (user.icebreakers.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    '💬 ${user.icebreakers.first.text}',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontStyle: FontStyle.italic,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: 'Denunciar ou bloquear',
+            icon: const Icon(Icons.more_vert),
+            onPressed: () async {
+              final blocked = await showSafetySheet(
+                context,
+                ref,
+                userId: user.id,
+                userName: user.name,
+              );
+              if (blocked && mounted) setState(() => _selected = 0);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDistance(double meters) {
+    if (meters < 1000) return '${meters.round()} m';
+    return '${(meters / 1000).toStringAsFixed(1)} km';
+  }
+
+  Widget _buildActionButtonsRow(UserEntity user) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        ActionButton(
-          type: ActionType.kiss,
-          onTap: () => _handleAction(ActionType.kiss),
-        ),
-        ActionButton(
-          type: ActionType.hug,
-          onTap: () => _handleAction(ActionType.hug),
-        ),
-        ActionButton(
-          type: ActionType.handshake,
-          onTap: () => _handleAction(ActionType.handshake),
-        ),
-        ActionButton(
-          type: ActionType.walk,
-          onTap: () => _handleAction(ActionType.walk),
-        ),
+        for (final type in ActionType.values)
+          ActionButton(type: type, onTap: () => _handleAction(user, type)),
       ],
     );
   }
 
-  void _handleAction(ActionType type) {
-    final users = ref.read(radarSearchProvider).users;
-    sendInteractionFromUi(
+  Future<void> _handleAction(UserEntity user, ActionType type) async {
+    HapticFeedback.mediumImpact();
+    final sent = await sendInteractionFromUi(
       context,
       ref,
-      target: _currentIndex < users.length ? users[_currentIndex] : null,
+      target: user,
       type: type,
+    );
+    if (sent && mounted) {
+      // A carta jogada sai da mesa e a próxima mais próxima entra.
+      setState(() {
+        _done.add(user.id);
+        _selected = 0;
+      });
+    }
+  }
+}
+
+class _TableCard extends StatelessWidget {
+  final UserEntity user;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _TableCard({
+    required this.user,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+        margin: EdgeInsets.symmetric(
+          horizontal: 4,
+          vertical: selected ? 0 : 22,
+        ),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? AppColors.primary : Colors.transparent,
+            width: 3,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(selected ? 60 : 25),
+              blurRadius: selected ? 14 : 6,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(17),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Image.network(
+                user.photoUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => Container(
+                  color: AppColors.surface,
+                  child: const Icon(
+                    Icons.person,
+                    size: 40,
+                    color: Colors.black26,
+                  ),
+                ),
+              ),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Colors.black.withAlpha(190)],
+                    stops: const [0.55, 1],
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 8,
+                right: 8,
+                bottom: 8,
+                child: Text(
+                  user.name.split(',').first,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

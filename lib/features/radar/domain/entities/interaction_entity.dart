@@ -10,7 +10,7 @@ extension ActionTypeLabels on ActionType {
       case ActionType.handshake:
         return 'Aperto de mão';
       case ActionType.walk:
-        return 'Passeio no bosque';
+        return 'Sair juntos';
     }
   }
 
@@ -23,7 +23,7 @@ extension ActionTypeLabels on ActionType {
       case ActionType.handshake:
         return '🤝';
       case ActionType.walk:
-        return '🌳';
+        return '🥂';
     }
   }
 
@@ -36,7 +36,7 @@ extension ActionTypeLabels on ActionType {
       case ActionType.handshake:
         return 'te estendeu a mão';
       case ActionType.walk:
-        return 'te convidou para um passeio no bosque';
+        return 'te convidou para sair juntos';
     }
   }
 
@@ -49,7 +49,7 @@ extension ActionTypeLabels on ActionType {
       case ActionType.handshake:
         return 'Você enviou um aperto de mão para';
       case ActionType.walk:
-        return 'Você convidou para um passeio no bosque:';
+        return 'Você convidou para sair juntos:';
     }
   }
 }
@@ -76,6 +76,9 @@ class InteractionRecord {
   final ActionType type;
   final DateTime createdAt;
 
+  /// Resposta dada ao quebra-gelo da pessoa antes de enviar.
+  final String answer;
+
   /// true quando a outra pessoa interagiu com você.
   final bool incoming;
 
@@ -86,6 +89,7 @@ class InteractionRecord {
     required this.type,
     required this.createdAt,
     this.incoming = false,
+    this.answer = '',
   });
 
   Map<String, dynamic> toJson() => {
@@ -95,6 +99,7 @@ class InteractionRecord {
         'type': type.name,
         'createdAt': createdAt.toIso8601String(),
         'incoming': incoming,
+        'answer': answer,
       };
 
   factory InteractionRecord.fromJson(Map<String, dynamic> json) {
@@ -109,6 +114,7 @@ class InteractionRecord {
       createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ??
           DateTime.now(),
       incoming: json['incoming'] as bool? ?? false,
+      answer: json['answer'] as String? ?? '',
     );
   }
 }

@@ -29,7 +29,9 @@ class RadarRepositoryImpl implements RadarRepository {
     double radiusKm,
   ) async {
     // 1. Consulta ultra-rápida no Redis para pegar IDs no raio dinâmico
-    final ids = await _remoteDataSource.getNearbyUserIds(lat, lng, radiusKm);
+    final distances =
+        await _remoteDataSource.getNearbyUserDistances(lat, lng, radiusKm);
+    final ids = distances.keys.where((id) => id != userId).toList();
 
     if (ids.isEmpty) {
       return [];
@@ -53,13 +55,16 @@ class RadarRepositoryImpl implements RadarRepository {
         .filter('id', 'in', ids)
         .filter('gender', 'in', searchPrefs);
 
-    // 4. Mapeamento para entidades de domínio
-    return (response as List).map((profile) {
+    // 4. Mapeamento para entidades de domínio, mais próximos primeiro
+    final rows = (response as List)
+      ..sort((a, b) => (distances[a['id']] ?? 0.0)
+          .compareTo(distances[b['id']] ?? 0.0));
+    return rows.map((profile) {
       return UserEntity(
         id: profile['id'],
         name: profile['display_name'],
         photoUrl: profile['photo_url'] ?? '',
-        distanceInMeters: 0.0,
+        distanceInMeters: distances[profile['id']] ?? 0.0,
         bio: profile['bio'] ?? '',
         icebreakers: [],
         authenticity: ProfileAuthenticityEntity(
@@ -84,6 +89,7 @@ class RadarRepositoryImpl implements RadarRepository {
       'from_user_id': i.fromUserId,
       'to_user_id': i.toUserId,
       'type': i.type.name,
+      'answer': i.answer,
     });
     return true;
   }

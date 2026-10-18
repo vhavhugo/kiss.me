@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../safety/presentation/providers/safety_provider.dart';
 import '../../../radar/domain/entities/interaction_entity.dart';
 import '../../../radar/presentation/providers/interactions_provider.dart';
 
@@ -46,7 +47,11 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final items = ref.watch(interactionsProvider);
+    final blocked = ref.watch(blockedUsersProvider);
+    final items = ref
+        .watch(interactionsProvider)
+        .where((r) => !blocked.contains(r.toUserId))
+        .toList();
     return Scaffold(
       appBar: AppBar(title: const Text('Notificações')),
       body: items.isEmpty

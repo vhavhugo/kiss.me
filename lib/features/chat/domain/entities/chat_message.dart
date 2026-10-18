@@ -1,4 +1,4 @@
-enum ChatMessageType { text, audio, video }
+enum ChatMessageType { text, audio, video, image }
 
 class ChatMessage {
   final String id;

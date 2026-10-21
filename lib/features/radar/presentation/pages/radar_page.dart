@@ -6,9 +6,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/radar_provider.dart';
+import '../../../privacy/presentation/providers/privacy_provider.dart';
 import '../providers/radar_search_provider.dart';
 import '../widgets/action_button.dart';
 import '../widgets/interaction_actions.dart';
+import '../../../chat/presentation/pages/conversation_page.dart';
+import '../../../chat/presentation/providers/chat_provider.dart';
 import '../widgets/dissolving_km_animation.dart';
 import '../../domain/entities/interaction_entity.dart';
 
@@ -30,6 +33,7 @@ class RadarPage extends ConsumerStatefulWidget {
 class _RadarPageState extends ConsumerState<RadarPage> {
   int _selected = 0;
   final Set<String> _done = {};
+  bool _isSending = false;
 
   @override
   void initState() {
@@ -218,7 +222,12 @@ class _RadarPageState extends ConsumerState<RadarPage> {
           ),
           const SizedBox(height: 2),
           const Text(
-            'Quem aqui pode render um beijo? Toque numa carta e escolha.',
+            'Aqui pode rolar um beijo?',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppColors.textSecondary),
+          ),
+          const Text(
+            'Toque em uma carta e escolha',
             textAlign: TextAlign.center,
             style: TextStyle(color: AppColors.textSecondary),
           ),
@@ -281,7 +290,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
           _buildActionButtonsRow(current),
           const SizedBox(height: 8),
           const Text(
-            'Você responde uma pergunta do perfil antes de enviar.',
+            'Toque em um ícone para enviar uma mensagem e abrir a conversa.',
             style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
           ),
         ],
@@ -392,7 +401,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${_formatDistance(user.distanceInMeters)} de você',
+                  _formatDistance(user.distanceInMeters),
                   style: const TextStyle(color: AppColors.textSecondary),
                 ),
                 if (user.bio.isNotEmpty) ...[
@@ -433,8 +442,8 @@ class _RadarPageState extends ConsumerState<RadarPage> {
   }
 
   String _formatDistance(double meters) {
-    if (meters < 1000) return '${meters.round()} m';
-    return '${(meters / 1000).toStringAsFixed(1)} km';
+    final t = ref.read(privacySettingsProvider).distanceText(meters);
+    return t.startsWith('a ') ? 'Está $t' : '$t de você';
   }
 
   Widget _buildActionButtonsRow(UserEntity user) {
@@ -448,19 +457,51 @@ class _RadarPageState extends ConsumerState<RadarPage> {
   }
 
   Future<void> _handleAction(UserEntity user, ActionType type) async {
-    HapticFeedback.mediumImpact();
-    final sent = await sendInteractionFromUi(
-      context,
-      ref,
-      target: user,
-      type: type,
-    );
-    if (sent && mounted) {
-      // A carta jogada sai da mesa e a próxima mais próxima entra.
+    if (_isSending) return;
+    _isSending = true;
+    try {
+      HapticFeedback.mediumImpact();
+      final senderId = ref.read(authProvider).user?.id;
+      final sent = await sendInteractionFromUi(
+        context,
+        ref,
+        target: user,
+        type: type,
+        requireIcebreaker: false,
+        source: InteractionSource.kissMeNow,
+      );
+      if (!sent || senderId == null || !mounted) return;
+      await ref
+          .read(chatControllerProvider)
+          .sendText(
+            conversationIdFor(senderId, user.id),
+            senderId,
+            type.chatMessage,
+          );
+      if (!mounted) return;
       setState(() {
         _done.add(user.id);
         _selected = 0;
       });
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ConversationPage(
+            peerId: user.id,
+            peerName: user.name,
+            peerPhotoUrl: user.photoUrl,
+          ),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text('Não foi possível enviar a mensagem: $error')),
+        );
+    } finally {
+      _isSending = false;
     }
   }
 }

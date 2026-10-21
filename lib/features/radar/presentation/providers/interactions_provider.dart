@@ -24,10 +24,12 @@ class InteractionsNotifier extends Notifier<List<InteractionRecord>> {
     final stored = raw == null
         ? <InteractionRecord>[]
         : (jsonDecode(raw) as List)
-            .map((e) => InteractionRecord.fromJson(e as Map<String, dynamic>))
-            .toList();
-    final all = [...stored, if (ref.read(isMockModeProvider)) ..._demoIncoming()]
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+              .map((e) => InteractionRecord.fromJson(e as Map<String, dynamic>))
+              .toList();
+    final all = [
+      ...stored,
+      if (ref.read(isMockModeProvider)) ..._demoIncoming(),
+    ]..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     state = all;
   }
 
@@ -36,6 +38,7 @@ class InteractionsNotifier extends Notifier<List<InteractionRecord>> {
     required UserEntity target,
     required ActionType type,
     String answer = '',
+    InteractionSource source = InteractionSource.kissMe,
   }) async {
     if (_ownerId != fromUserId) await load(fromUserId);
 
@@ -46,6 +49,7 @@ class InteractionsNotifier extends Notifier<List<InteractionRecord>> {
       type: type,
       createdAt: DateTime.now(),
       answer: answer,
+      source: source,
     );
     state = [record, ...state];
 
@@ -58,7 +62,9 @@ class InteractionsNotifier extends Notifier<List<InteractionRecord>> {
     );
 
     try {
-      await ref.read(radarRepositoryProvider).sendInteraction(
+      await ref
+          .read(radarRepositoryProvider)
+          .sendInteraction(
             InteractionEntity(
               fromUserId: fromUserId,
               toUserId: target.id,
@@ -107,5 +113,5 @@ class InteractionsNotifier extends Notifier<List<InteractionRecord>> {
 
 final interactionsProvider =
     NotifierProvider<InteractionsNotifier, List<InteractionRecord>>(
-  InteractionsNotifier.new,
-);
+      InteractionsNotifier.new,
+    );

@@ -109,3 +109,55 @@ create policy "reports created by reporter"
 alter table public.chat_messages drop constraint if exists chat_messages_message_type_check;
 alter table public.chat_messages add constraint chat_messages_message_type_check
   check (message_type in ('text', 'audio', 'video', 'image'));
+
+
+-- Chat: visualização, edição e exclusão ("para mim" / "para todos")
+alter table public.chat_messages add column if not exists read_at timestamptz;
+alter table public.chat_messages add column if not exists edited_at timestamptz;
+alter table public.chat_messages add column if not exists deleted_at timestamptz;
+alter table public.chat_messages add column if not exists hidden_by text[] not null default '{}';
+
+-- Só participantes da conversa (o id é "userA|userB") podem atualizar.
+drop policy if exists "chat messages can be updated by participants" on public.chat_messages;
+create policy "chat messages can be updated by participants"
+  on public.chat_messages for update to authenticated
+  using (position(auth.uid()::text in conversation_id) > 0)
+  with check (position(auth.uid()::text in conversation_id) > 0);
+
+-- Quem não enviou só pode mexer em read_at e hidden_by; ninguém altera sender/tipo.
+create or replace function public.chat_messages_guard()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if new.sender_id is distinct from old.sender_id
+     or new.conversation_id is distinct from old.conversation_id
+     or new.message_type is distinct from old.message_type
+     or new.created_at is distinct from old.created_at then
+    raise exception 'campos imutáveis';
+  end if;
+  if auth.uid()::text is distinct from old.sender_id then
+    if new.content is distinct from old.content
+       or new.file_name is distinct from old.file_name
+       or new.edited_at is distinct from old.edited_at
+       or new.deleted_at is distinct from old.deleted_at then
+      raise exception 'apenas quem enviou pode alterar a mensagem';
+    end if;
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists chat_messages_guard_trg on public.chat_messages;
+create trigger chat_messages_guard_trg
+  before update on public.chat_messages
+  for each row execute function public.chat_messages_guard();
+
+-- "Apagar para mim" vale para qualquer participante, inclusive para mensagens
+-- recebidas; por isso passa por esta função em vez de um update direto.
+create or replace function public.chat_hide_message(p_message_id bigint)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  update public.chat_messages
+     set hidden_by = array_append(hidden_by, auth.uid()::text)
+   where id = p_message_id
+     and position(auth.uid()::text in conversation_id) > 0
+     and not (auth.uid()::text = any(hidden_by));
+end $$;

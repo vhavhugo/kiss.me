@@ -1,8 +1,12 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../privacy/presentation/providers/privacy_provider.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/user_entity.dart';
 import 'ai_trust_badge.dart';
+import '../../../sponsorship/sponsor_dream_sheet.dart';
 import 'authenticity_badge.dart';
+import '../../../questionnaire/notebook_nudge.dart';
 
 /// Perfil em tela cheia: a foto principal ocupa todo o espaço visível e,
 /// ao rolar, aparecem os dados do perfil e as demais fotos.
@@ -36,17 +40,17 @@ class ProfileDetailView extends StatelessWidget {
                 _InfoChips(user: user),
                 if (user.bio.isNotEmpty)
                   _Section(title: 'Sobre', child: Text(user.bio, style: _bodyStyle)),
-                if (user.dream != null && user.dream!.isNotEmpty)
+                if (user.acceptsSponsor &&
+                    user.dream != null &&
+                    user.dream!.isNotEmpty)
                   _Section(
                     title: 'Sonho',
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(user.dream!, style: _bodyStyle),
-                        if (user.acceptsSponsor) ...[
-                          const SizedBox(height: 10),
-                          const _SponsorChip(),
-                        ],
+                        const SizedBox(height: 10),
+                        _SponsorChip(user: user),
                       ],
                     ),
                   ),
@@ -104,6 +108,7 @@ class ProfileDetailView extends StatelessWidget {
                           .toList(),
                     ),
                   ),
+                NotebookNudge(user: user),
               ],
             ),
           ),
@@ -115,7 +120,7 @@ class ProfileDetailView extends StatelessWidget {
   static const _bodyStyle = TextStyle(fontSize: 15, height: 1.4, color: Colors.black87);
 }
 
-class _Hero extends StatelessWidget {
+class _Hero extends ConsumerWidget {
   final UserEntity user;
   final double height;
   final String? photo;
@@ -123,7 +128,8 @@ class _Hero extends StatelessWidget {
   const _Hero({required this.user, required this.height, required this.photo});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final privacy = ref.watch(privacySettingsProvider);
     return SizedBox(
       height: height,
       width: double.infinity,
@@ -177,7 +183,7 @@ class _Hero extends StatelessWidget {
                     const Icon(Icons.location_on_rounded, color: AppColors.primary, size: 18),
                     const SizedBox(width: 4),
                     Text(
-                      _distanceText(user.distanceInMeters),
+                      'A ${privacy.distanceText(user.distanceInMeters)} de você'.replaceFirst('A a ', 'A '),
                       style: TextStyle(color: Colors.white.withAlpha(220), fontSize: 14),
                     ),
                   ],
@@ -205,12 +211,6 @@ class _Hero extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  String _distanceText(double m) {
-    if (m <= 0) return 'A poucos metros de você';
-    if (m < 1000) return 'A ${m.round()} m de você';
-    return 'A ${(m / 1000).toStringAsFixed(1)} km de você';
   }
 }
 
@@ -287,25 +287,40 @@ class _InfoChips extends StatelessWidget {
 }
 
 class _SponsorChip extends StatelessWidget {
-  const _SponsorChip();
+  final UserEntity user;
+  const _SponsorChip({required this.user});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withAlpha(25),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: const Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.volunteer_activism_rounded, size: 16, color: AppColors.primary),
-          SizedBox(width: 6),
-          Text('Aceita um patrocinador',
-              style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withAlpha(25),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.volunteer_activism_rounded,
+                  size: 16, color: AppColors.primary),
+              SizedBox(width: 6),
+              Text('Aceita um patrocinador',
+                  style: TextStyle(
+                      color: AppColors.primary, fontWeight: FontWeight.w600)),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        FilledButton.icon(
+          style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+          onPressed: () => showSponsorDreamSheet(context, user),
+          icon: const Icon(Icons.favorite_rounded, size: 18),
+          label: const Text('Patrocinar este sonho'),
+        ),
+      ],
     );
   }
 }

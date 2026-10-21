@@ -208,6 +208,7 @@ class _ContactTile extends ConsumerWidget {
 
   String _messagePreview(ChatMessage m, String me) {
     final prefix = m.senderId == me ? 'Você: ' : '';
+    if (m.isDeleted) return '🚫 Mensagem apagada';
     switch (m.type) {
       case ChatMessageType.text:
         return '$prefix${m.content}';
@@ -225,7 +226,10 @@ class _ContactTile extends ConsumerWidget {
     final me = ref.watch(authProvider).user?.id ?? 'anonymous';
     final convId = conversationIdFor(me, contact.id);
     final messages = ref.watch(chatMessagesProvider(convId)).asData?.value;
-    final lastMessage = (messages == null || messages.isEmpty) ? null : messages.last;
+    final visible =
+        messages?.where((m) => !m.hiddenBy.contains(me)).toList();
+    final lastMessage =
+        (visible == null || visible.isEmpty) ? null : visible.last;
 
     final interactionText = contact.last.incoming
         ? contact.last.type.receivedMessage

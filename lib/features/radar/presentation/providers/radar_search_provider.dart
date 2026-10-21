@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/radar_repository.dart';
 import '../providers/radar_provider.dart';
+import '../../../privacy/presentation/providers/privacy_provider.dart';
 
 class RadarSearchState {
   final List<UserEntity> users;
@@ -45,8 +46,9 @@ class RadarSearchNotifier extends Notifier<RadarSearchState> {
   void startSearch(String userId, double lat, double lng) async {
     _expansionTimer?.cancel();
     state = state.copyWith(isSearching: true, users: [], currentRadiusKm: 0.2); // Inicia com 200m
-    await _repository.updateLocation(userId, lat, lng);
-    _performSearch(userId, lat, lng);
+    final c = ref.read(privacySettingsProvider).cloak(lat, lng);
+    await _repository.updateLocation(userId, c.lat, c.lng);
+    _performSearch(userId, c.lat, c.lng);
   }
 
   void stopSearch() {

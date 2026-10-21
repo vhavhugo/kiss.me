@@ -61,4 +61,31 @@ class ChatController {
       bytes: bytes,
     );
   }
+
+  Future<void> editText(String conversationId, String messageId, String text) {
+    return _repository.editText(
+      conversationId: conversationId,
+      messageId: messageId,
+      newText: text,
+    );
+  }
+
+  Future<void> deleteForMe(String conversationId, String messageId, String userId) {
+    return _repository.deleteForMe(
+      conversationId: conversationId,
+      messageId: messageId,
+      userId: userId,
+    );
+  }
+
+  Future<void> deleteForEveryone(String conversationId, String messageId) {
+    return _repository.deleteForEveryone(
+      conversationId: conversationId,
+      messageId: messageId,
+    );
+  }
+
+  Future<void> markRead(String conversationId, String userId) {
+    return _repository.markRead(conversationId: conversationId, userId: userId);
+  }
 }

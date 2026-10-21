@@ -13,9 +13,9 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/chat_message.dart';
 import '../providers/chat_provider.dart';
+import '../../../privacy/presentation/providers/privacy_provider.dart';
 import '../widgets/conversation_avatar.dart';
 import '../widgets/media_messages.dart';
-import '../../../radar/domain/entities/interaction_entity.dart';
 import '../../../radar/presentation/providers/interactions_provider.dart';
 import '../../../safety/presentation/widgets/safety_sheet.dart';
 import 'video_call_page.dart';
@@ -42,6 +42,8 @@ class _ConversationPageState extends ConsumerState<ConversationPage> {
   final _messageController = TextEditingController();
   final _offlineMessages = <ChatMessage>[];
   bool _isSending = false;
+  String? _selectedId;
+  bool _markingRead = false;
 
   final _recorder = AudioRecorder();
   bool _isRecording = false;
@@ -50,7 +52,8 @@ class _ConversationPageState extends ConsumerState<ConversationPage> {
   Duration _recordElapsed = Duration.zero;
   Timer? _recordTimer;
   static const _maxRecording = Duration(minutes: 5);
-  static const _ephemeralDuration = Duration(hours: 24);
+  Timer? _expirationTimer;
+  DateTime? _scheduledExpiration;
 
   @override
   void initState() {
@@ -62,6 +65,7 @@ class _ConversationPageState extends ConsumerState<ConversationPage> {
   @override
   void dispose() {
     _recordTimer?.cancel();
+    _expirationTimer?.cancel();
     _recorder.dispose();
     _messageController.dispose();
     super.dispose();
@@ -71,14 +75,23 @@ class _ConversationPageState extends ConsumerState<ConversationPage> {
   Widget build(BuildContext context) {
     final messages = ref.watch(chatMessagesProvider(_conversationId));
     final currentUserId = ref.watch(authProvider).user?.id ?? 'anonymous';
-    final dates = ref
+    final receipts = ref.watch(privacySettingsProvider).readReceipts;
+    final interactions = ref
         .watch(interactionsProvider)
-        .where((r) => r.toUserId == widget.peerId && r.type == ActionType.walk)
-        .map((r) => r.createdAt)
+        .where((r) => r.toUserId == widget.peerId)
         .toList()
-      ..sort();
+      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
     final expiresAt =
-        dates.isEmpty ? null : dates.last.add(_ephemeralDuration);
+        interactions.isEmpty ? null : interactions.last.expiresAt;
+    if (_scheduledExpiration != expiresAt) {
+      _expirationTimer?.cancel();
+      _scheduledExpiration = expiresAt;
+      if (expiresAt != null && expiresAt.isAfter(DateTime.now())) {
+        _expirationTimer = Timer(expiresAt.difference(DateTime.now()), () {
+          if (mounted) setState(() {});
+        });
+      }
+    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -153,14 +166,28 @@ class _ConversationPageState extends ConsumerState<ConversationPage> {
             child: messages.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, _) => _buildOfflineMessages(),
-              data: (items) => ListView.builder(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-                itemCount: items.length,
-                itemBuilder: (context, index) => _MessageBubble(
-                  message: items[index],
-                  isMine: items[index].senderId == currentUserId,
-                ),
-              ),
+              data: (all) {
+                final items = all
+                    .where((m) => !m.hiddenBy.contains(currentUserId))
+                    .toList();
+                _scheduleMarkRead(all, currentUserId);
+                return ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                  itemCount: items.length,
+                  itemBuilder: (context, index) {
+                    final m = items[index];
+                    return _MessageBubble(
+                      message: m,
+                      isMine: m.senderId == currentUserId,
+                      showReceipts: receipts,
+                      selected: _selectedId == m.id,
+                      onLongPress: m.id.startsWith('offline-')
+                          ? null
+                          : () => _openActions(m, currentUserId),
+                    );
+                  },
+                );
+              },
             ),
           ),
           if (expiresAt != null && !DateTime.now().isBefore(expiresAt))
@@ -180,6 +207,125 @@ class _ConversationPageState extends ConsumerState<ConversationPage> {
         ],
       ),
     );
+  }
+
+  void _scheduleMarkRead(List<ChatMessage> all, String me) {
+    final pending = all.any((m) =>
+        m.senderId != me && m.readAt == null && !m.id.startsWith('offline-'));
+    if (!pending || _markingRead) return;
+    if (!ref.read(privacySettingsProvider).readReceipts) return;
+    _markingRead = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        if (mounted) {
+          await ref.read(chatControllerProvider).markRead(_conversationId, me);
+        }
+      } catch (_) {
+      } finally {
+        _markingRead = false;
+      }
+    });
+  }
+
+  String _fullDate(DateTime d) {
+    String two(int v) => v.toString().padLeft(2, '0');
+    return '${two(d.day)}/${two(d.month)}/${d.year} às ${two(d.hour)}:${two(d.minute)}';
+  }
+
+  Future<void> _openActions(ChatMessage m, String me) async {
+    final mine = m.senderId == me;
+    setState(() => _selectedId = m.id);
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              dense: true,
+              leading: const Icon(Icons.schedule_rounded),
+              title: Text('Enviada em ${_fullDate(m.createdAt)}'),
+            ),
+            if (mine && !m.isDeleted && ref.read(privacySettingsProvider).readReceipts)
+              ListTile(
+                dense: true,
+                leading: Icon(
+                  m.isRead ? Icons.done_all_rounded : Icons.done_rounded,
+                  color: m.isRead ? Colors.lightBlue : null,
+                ),
+                title: Text(m.isRead
+                    ? 'Visualizada em ${_fullDate(m.readAt!)}'
+                    : 'Ainda não visualizada'),
+              ),
+            const Divider(height: 1),
+            if (mine && !m.isDeleted && m.type == ChatMessageType.text)
+              ListTile(
+                leading: const Icon(Icons.edit_outlined),
+                title: const Text('Editar'),
+                onTap: () => Navigator.pop(ctx, 'edit'),
+              ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline, color: Colors.red),
+              title: const Text('Apagar', style: TextStyle(color: Colors.red)),
+              onTap: () => Navigator.pop(ctx, 'delete'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted) return;
+    setState(() => _selectedId = null);
+    if (action == 'edit') await _editMessage(m);
+    if (action == 'delete') await _deleteMessage(m, mine);
+  }
+
+  Future<void> _editMessage(ChatMessage m) async {
+    final text = await showDialog<String>(
+      context: context,
+      builder: (_) => _EditDialog(initial: m.content),
+    );
+    if (text == null || text.trim().isEmpty || text.trim() == m.content) return;
+    try {
+      await ref.read(chatControllerProvider).editText(_conversationId, m.id, text.trim());
+    } catch (_) {
+      if (mounted) _showError('Não foi possível editar a mensagem.');
+    }
+  }
+
+  Future<void> _deleteMessage(ChatMessage m, bool mine) async {
+    final choice = await showDialog<String>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: const Text('Apagar mensagem?'),
+        children: [
+          if (mine && !m.isDeleted)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(ctx, 'all'),
+              child: const Text('Apagar para todos'),
+            ),
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(ctx, 'me'),
+            child: const Text('Apagar só para mim'),
+          ),
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
+        ],
+      ),
+    );
+    if (choice == null) return;
+    try {
+      final c = ref.read(chatControllerProvider);
+      if (choice == 'all') {
+        await c.deleteForEveryone(_conversationId, m.id);
+      } else {
+        await c.deleteForMe(_conversationId, m.id, ref.read(authProvider).user?.id ?? 'anonymous');
+      }
+    } catch (_) {
+      if (mounted) _showError('Não foi possível apagar a mensagem.');
+    }
   }
 
   Widget _buildOfflineMessages() {
@@ -507,71 +653,102 @@ class _ConversationPageState extends ConsumerState<ConversationPage> {
 class _MessageBubble extends StatelessWidget {
   final ChatMessage message;
   final bool isMine;
+  final bool selected;
+  final bool showReceipts;
+  final VoidCallback? onLongPress;
 
-  const _MessageBubble({required this.message, required this.isMine});
+  const _MessageBubble({
+    required this.message,
+    required this.isMine,
+    this.showReceipts = true,
+    this.selected = false,
+    this.onLongPress,
+  });
 
   @override
   Widget build(BuildContext context) {
     final foreground = isMine ? Colors.white : AppColors.textPrimary;
-    final isVideo = message.type == ChatMessageType.video ||
-        message.type == ChatMessageType.image;
+    final deleted = message.isDeleted;
+    final isMedia = !deleted &&
+        (message.type == ChatMessageType.video ||
+            message.type == ChatMessageType.image);
+    final content = deleted
+        ? Text(
+            '🚫 Mensagem apagada',
+            style: TextStyle(
+              color: foreground.withAlpha(190),
+              fontStyle: FontStyle.italic,
+              fontSize: 14,
+            ),
+          )
+        : switch (message.type) {
+            ChatMessageType.text =>
+              Text(message.content, style: TextStyle(color: foreground, fontSize: 15)),
+            ChatMessageType.image => ImageMessagePreview(
+                source: message.content,
+                fileName: message.fileName,
+              ),
+            ChatMessageType.video => VideoMessagePreview(
+                source: message.content,
+                fileName: message.fileName,
+                isMine: isMine,
+              ),
+            ChatMessageType.audio => AudioMessageBubble(
+                source: message.content,
+                fileName: message.fileName,
+                foreground: foreground,
+              ),
+          };
+    final meta = foreground.withAlpha(180);
+    final footer = Padding(
+      padding: EdgeInsets.fromLTRB(isMedia ? 6 : 0, 4, isMedia ? 6 : 0, isMedia ? 2 : 0),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          if (message.editedAt != null && !deleted)
+            Text('editada · ', style: TextStyle(color: meta, fontSize: 10)),
+          Text(_formatTime(message.createdAt),
+              style: TextStyle(color: meta, fontSize: 10)),
+          if (isMine && !deleted && showReceipts) ...[
+            const SizedBox(width: 4),
+            Icon(
+              message.isRead ? Icons.done_all_rounded : Icons.done_rounded,
+              size: 14,
+              color: message.isRead ? Colors.lightBlueAccent : meta,
+            ),
+          ],
+        ],
+      ),
+    );
     return Align(
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 300),
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: isVideo
-            ? const EdgeInsets.all(4)
-            : const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-        decoration: BoxDecoration(
-          color: isMine ? AppColors.primary : AppColors.surface,
-          borderRadius: BorderRadius.circular(18),
-          border: isMine ? null : Border.all(color: Colors.black12),
+      child: GestureDetector(
+        onLongPress: onLongPress,
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 300),
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: isMedia
+              ? const EdgeInsets.all(4)
+              : const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: isMine ? AppColors.primary : AppColors.surface,
+            borderRadius: BorderRadius.circular(18),
+            border: selected
+                ? Border.all(color: Colors.lightBlueAccent, width: 2)
+                : (isMine ? null : Border.all(color: Colors.black12)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: [content, footer],
+          ),
         ),
-        child: switch (message.type) {
-          ChatMessageType.text => _MessageText(message: message, foreground: foreground),
-          ChatMessageType.image => ImageMessagePreview(
-              source: message.content,
-              fileName: message.fileName,
-            ),
-          ChatMessageType.video => VideoMessagePreview(
-              source: message.content,
-              fileName: message.fileName,
-              isMine: isMine,
-            ),
-          ChatMessageType.audio => AudioMessageBubble(
-              source: message.content,
-              fileName: message.fileName,
-              foreground: foreground,
-            ),
-        },
       ),
     );
   }
-}
 
-class _MessageText extends StatelessWidget {
-  final ChatMessage message;
-  final Color foreground;
-
-  const _MessageText({required this.message, required this.foreground});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(message.content, style: TextStyle(color: foreground, fontSize: 15)),
-        const SizedBox(height: 4),
-        Text(
-          _formatTime(message.createdAt),
-          style: TextStyle(color: foreground.withAlpha(170), fontSize: 10),
-        ),
-      ],
-    );
-  }
-
-  String _formatTime(DateTime date) {
+  static String _formatTime(DateTime date) {
     final hour = date.hour.toString().padLeft(2, '0');
     final minute = date.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
@@ -652,6 +829,39 @@ class _EphemeralBannerState extends State<_EphemeralBanner> {
       child: Text(text,
           textAlign: TextAlign.center,
           style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
+    );
+  }
+}
+
+class _EditDialog extends StatefulWidget {
+  final String initial;
+  const _EditDialog({required this.initial});
+
+  @override
+  State<_EditDialog> createState() => _EditDialogState();
+}
+
+class _EditDialogState extends State<_EditDialog> {
+  late final _controller = TextEditingController(text: widget.initial);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Editar mensagem'),
+      content: TextField(controller: _controller, autofocus: true, maxLines: null),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, _controller.text),
+          child: const Text('Salvar'),
+        ),
+      ],
     );
   }
 }

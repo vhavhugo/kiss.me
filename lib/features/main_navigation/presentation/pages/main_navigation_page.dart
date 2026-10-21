@@ -9,7 +9,13 @@ import '../../../chat/presentation/pages/chat_page.dart';
 import '../../../profile/presentation/pages/questionnaire_page.dart';
 import '../../../profile/presentation/pages/my_profile_page.dart';
 import '../../../profile/presentation/providers/profile_photo_provider.dart';
+import '../../../profile/presentation/providers/verification_provider.dart';
+import '../../../profile/presentation/widgets/verified_seal.dart';
 import '../../../notifications/presentation/pages/notifications_page.dart';
+import '../../../privacy/presentation/pages/privacy_page.dart';
+import '../../../notifications/presentation/providers/notification_items_provider.dart';
+import '../../../notifications/presentation/providers/notification_state_provider.dart';
+import '../../../radar/presentation/providers/interactions_provider.dart';
 
 class MainNavigationPage extends ConsumerStatefulWidget {
   const MainNavigationPage({super.key});
@@ -21,19 +27,36 @@ class MainNavigationPage extends ConsumerStatefulWidget {
 class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
   int _selectedIndex = 0; // Começa na nova tela 'Kiss Me'
 
-  final List<Widget> _pages = [
-    const KissMePage(), // 1ª posição: Kiss Me (Antigo Perfil)
-    const RadarPage(),  // 2ª posição: Kiss Me Now
-    const ChatPage(),
-    const SettingsPage(), // 4ª posição: Ajustes (com perfil dentro)
-  ];
+  // Mudar a chave recria a mesa e começa um jogo novo.
+  int _gameId = 0;
+
+  final _kissMe = const KissMePage();
+  final _chat = const ChatPage();
+  final _settings = const SettingsPage();
+
+  @override
+  void initState() {
+    super.initState();
+    final user = ref.read(authProvider).user;
+    if (user != null) {
+      Future.microtask(() {
+        ref.read(interactionsProvider.notifier).load(user.id);
+        ref.read(notificationStateProvider.notifier).load(user.id);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
-        children: _pages,
+        children: [
+          _kissMe,
+          RadarPage(key: ValueKey(_gameId)),
+          _chat,
+          _settings,
+        ],
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -47,7 +70,10 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
         ),
         child: BottomNavigationBar(
           currentIndex: _selectedIndex,
-          onTap: (index) => setState(() => _selectedIndex = index),
+          onTap: (index) => setState(() {
+            if (index == 1) _gameId++;
+            _selectedIndex = index;
+          }),
           type: BottomNavigationBarType.fixed,
           backgroundColor: AppColors.surface,
           selectedItemColor: AppColors.primary,
@@ -94,12 +120,29 @@ class SettingsPage extends ConsumerWidget {
       body: ListView(
         children: [
           ListTile(
-            leading: CircleAvatar(
-              backgroundImage: photo == null ? null : MemoryImage(photo),
-              child: photo == null ? const Icon(Icons.person) : null,
+            leading: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                CircleAvatar(
+                  backgroundImage: photo == null ? null : MemoryImage(photo),
+                  child: photo == null ? const Icon(Icons.person) : null,
+                ),
+                if (ref.watch(verificationProvider))
+                  const Positioned(
+                    right: -4,
+                    bottom: -4,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                          color: Colors.white, shape: BoxShape.circle),
+                      child: VerifiedSeal(size: 18),
+                    ),
+                  ),
+              ],
             ),
             title: const Text("Meu Perfil"),
-            subtitle: const Text("Editar fotos e bio"),
+            subtitle: Text(ref.watch(verificationProvider)
+                ? "Perfil verificado"
+                : "Editar fotos e bio"),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.push(
@@ -110,7 +153,15 @@ class SettingsPage extends ConsumerWidget {
           ),
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.notifications_outlined),
+            leading: Builder(builder: (_) {
+              final unread = ref.watch(unreadNotificationsCountProvider);
+              return Badge(
+                isLabelVisible: unread > 0,
+                label: Text(unread > 99 ? '99+' : '$unread'),
+                backgroundColor: AppColors.primary,
+                child: const Icon(Icons.notifications_outlined),
+              );
+            }),
             title: const Text("Notificações"),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
@@ -120,9 +171,15 @@ class SettingsPage extends ConsumerWidget {
               );
             },
           ),
-          const ListTile(
-            leading: Icon(Icons.security_outlined),
-            title: Text("Privacidade"),
+          ListTile(
+            leading: const Icon(Icons.security_outlined),
+            title: const Text("Privacidade"),
+            subtitle: const Text("Localização, distância e mensagens"),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const PrivacyPage()),
+            ),
           ),
           const Divider(),
           ListTile(

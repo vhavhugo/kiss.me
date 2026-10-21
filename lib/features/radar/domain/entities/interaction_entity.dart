@@ -1,6 +1,21 @@
 enum ActionType { kiss, hug, handshake, walk }
 
+enum InteractionSource {
+  kissMe,
+  kissMeNow;
+
+  Duration get conversationDuration =>
+      this == kissMeNow ? const Duration(hours: 1) : const Duration(hours: 24);
+}
+
 extension ActionTypeLabels on ActionType {
+  String get chatMessage => switch (this) {
+    ActionType.kiss => '💋 Te enviei um beijo!',
+    ActionType.hug => '🤗 Te enviei um abraço!',
+    ActionType.handshake => '🤝 Te enviei um aperto de mão!',
+    ActionType.walk => '🥂 Vamos sair juntos?',
+  };
+
   String get label {
     switch (this) {
       case ActionType.kiss:
@@ -75,6 +90,9 @@ class InteractionRecord {
   final String toUserPhotoUrl;
   final ActionType type;
   final DateTime createdAt;
+  final InteractionSource source;
+
+  DateTime get expiresAt => createdAt.add(source.conversationDuration);
 
   /// Resposta dada ao quebra-gelo da pessoa antes de enviar.
   final String answer;
@@ -88,19 +106,21 @@ class InteractionRecord {
     required this.toUserPhotoUrl,
     required this.type,
     required this.createdAt,
+    this.source = InteractionSource.kissMe,
     this.incoming = false,
     this.answer = '',
   });
 
   Map<String, dynamic> toJson() => {
-        'toUserId': toUserId,
-        'toUserName': toUserName,
-        'toUserPhotoUrl': toUserPhotoUrl,
-        'type': type.name,
-        'createdAt': createdAt.toIso8601String(),
-        'incoming': incoming,
-        'answer': answer,
-      };
+    'toUserId': toUserId,
+    'toUserName': toUserName,
+    'toUserPhotoUrl': toUserPhotoUrl,
+    'type': type.name,
+    'createdAt': createdAt.toIso8601String(),
+    'source': source.name,
+    'incoming': incoming,
+    'answer': answer,
+  };
 
   factory InteractionRecord.fromJson(Map<String, dynamic> json) {
     return InteractionRecord(
@@ -111,9 +131,14 @@ class InteractionRecord {
         (t) => t.name == json['type'],
         orElse: () => ActionType.kiss,
       ),
-      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+      createdAt:
+          DateTime.tryParse(json['createdAt'] as String? ?? '') ??
           DateTime.now(),
       incoming: json['incoming'] as bool? ?? false,
+      source: InteractionSource.values.firstWhere(
+        (source) => source.name == json['source'],
+        orElse: () => InteractionSource.kissMe,
+      ),
       answer: json['answer'] as String? ?? '',
     );
   }

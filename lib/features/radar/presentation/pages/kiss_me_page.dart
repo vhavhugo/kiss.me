@@ -10,6 +10,9 @@ import '../widgets/dissolving_km_animation.dart';
 import '../../domain/entities/interaction_entity.dart';
 import '../../domain/entities/user_entity.dart';
 import '../widgets/ai_trust_system.dart';
+import '../../../profile/presentation/widgets/verified_seal.dart';
+import '../../../notifications/presentation/pages/notifications_page.dart';
+import '../../../notifications/presentation/providers/notification_items_provider.dart';
 import '../../../safety/presentation/providers/safety_provider.dart';
 import '../../../../features/privacy/presentation/widgets/privacy_safe_indicator.dart';
 import '../../../../features/gamification/presentation/widgets/gamification_progress_bar.dart';
@@ -24,6 +27,13 @@ class KissMePage extends ConsumerStatefulWidget {
 class _KissMePageState extends ConsumerState<KissMePage> {
   final PageController _pageController = PageController();
   int _currentIndex = 0;
+  bool _isSending = false;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -32,11 +42,9 @@ class _KissMePageState extends ConsumerState<KissMePage> {
       // Garante que a busca comece imediatamente se estiver online
       final authState = ref.read(authProvider);
       if (authState.isOnline) {
-        ref.read(radarSearchProvider.notifier).startSearch(
-              authState.user!.id,
-              -23.5505,
-              -46.6333,
-            );
+        ref
+            .read(radarSearchProvider.notifier)
+            .startSearch(authState.user!.id, -23.5505, -46.6333);
       }
     });
   }
@@ -65,6 +73,30 @@ class _KissMePageState extends ConsumerState<KissMePage> {
         ),
         centerTitle: true,
         leading: _buildStatusToggle(authState),
+        actions: [
+          Consumer(
+            builder: (context, ref, _) {
+              final unread = ref.watch(unreadNotificationsCountProvider);
+              return IconButton(
+                tooltip: 'Notificações',
+                icon: Badge(
+                  isLabelVisible: unread > 0,
+                  label: Text(unread > 99 ? '99+' : '$unread'),
+                  backgroundColor: AppColors.primary,
+                  child: const Icon(Icons.notifications_outlined),
+                ),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const NotificationsPage()),
+                ),
+              );
+            },
+          ),
+          const Padding(
+            padding: EdgeInsets.only(right: 16),
+            child: Center(child: VerifiedSeal()),
+          ),
+        ],
       ),
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 800),
@@ -81,11 +113,9 @@ class _KissMePageState extends ConsumerState<KissMePage> {
         ref.read(authProvider.notifier).toggleOnlineStatus();
         final newAuthState = ref.read(authProvider);
         if (newAuthState.isOnline) {
-          ref.read(radarSearchProvider.notifier).startSearch(
-                newAuthState.user!.id,
-                -23.5505,
-                -46.6333,
-              );
+          ref
+              .read(radarSearchProvider.notifier)
+              .startSearch(newAuthState.user!.id, -23.5505, -46.6333);
         } else {
           ref.read(radarSearchProvider.notifier).stopSearch();
         }
@@ -103,12 +133,14 @@ class _KissMePageState extends ConsumerState<KissMePage> {
                       color: AppColors.online.withAlpha(100),
                       blurRadius: 12,
                       spreadRadius: 2,
-                    )
+                    ),
                   ]
                 : [],
           ),
           child: Icon(
-            auth.isOnline ? Icons.radar_rounded : Icons.power_settings_new_rounded,
+            auth.isOnline
+                ? Icons.radar_rounded
+                : Icons.power_settings_new_rounded,
             size: 16,
             color: Colors.white,
           ),
@@ -131,7 +163,8 @@ class _KissMePageState extends ConsumerState<KissMePage> {
                   const DissolvingKmAnimation(radiusKm: 0.0),
                   const SizedBox(height: 30),
                   const AiTrustSystem(
-                    localJustification: "Encontrando conexões reais baseadas na sua essência.",
+                    localJustification:
+                        "Encontrando conexões reais baseadas na sua essência.",
                     score: 0.0,
                   ),
                   const SizedBox(height: 10),
@@ -146,9 +179,11 @@ class _KissMePageState extends ConsumerState<KissMePage> {
                   ),
                   const SizedBox(height: 30),
                   Text(
-                    !auth.isOnline ? "Você está offline" : "Expandindo o Radar...",
+                    !auth.isOnline
+                        ? "Você está offline"
+                        : "Expandindo o Radar...",
                     style: const TextStyle(
-                      fontSize: 20, 
+                      fontSize: 20,
                       fontWeight: FontWeight.w600,
                       color: Colors.black54,
                     ),
@@ -198,40 +233,44 @@ class _KissMePageState extends ConsumerState<KissMePage> {
     UserEntity? current() =>
         _currentIndex < users.length ? users[_currentIndex] : null;
     Future<void> send(ActionType type) async {
-      final sent = await sendInteractionFromUi(context, ref,
-          target: current(), type: type);
-      if (!sent || !mounted || !_pageController.hasClients) return;
-      if (_currentIndex + 1 < users.length) {
-        _pageController.nextPage(
-          duration: const Duration(milliseconds: 450),
-          curve: Curves.easeOutCubic,
+      if (_isSending) return;
+      _isSending = true;
+      try {
+        final sent = await sendInteractionFromUi(
+          context,
+          ref,
+          target: current(),
+          type: type,
+          requireIcebreaker: false,
         );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Não há mais pessoas por perto agora.')),
-        );
+        if (!sent || !mounted || !_pageController.hasClients) return;
+        if (_currentIndex + 1 < users.length) {
+          await _pageController.nextPage(
+            duration: const Duration(milliseconds: 450),
+            curve: Curves.easeOutCubic,
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Não há mais pessoas por perto agora.'),
+            ),
+          );
+        }
+      } finally {
+        _isSending = false;
       }
     }
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        ActionButton(
-          type: ActionType.kiss,
-          onTap: () => send(ActionType.kiss),
-        ),
-        ActionButton(
-          type: ActionType.hug,
-          onTap: () => send(ActionType.hug),
-        ),
+        ActionButton(type: ActionType.kiss, onTap: () => send(ActionType.kiss)),
+        ActionButton(type: ActionType.hug, onTap: () => send(ActionType.hug)),
         ActionButton(
           type: ActionType.handshake,
           onTap: () => send(ActionType.handshake),
         ),
-        ActionButton(
-          type: ActionType.walk,
-          onTap: () => send(ActionType.walk),
-        ),
+        ActionButton(type: ActionType.walk, onTap: () => send(ActionType.walk)),
       ],
     );
   }

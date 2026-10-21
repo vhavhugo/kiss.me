@@ -24,7 +24,11 @@ Future<String?> _askIcebreaker(
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setState) => Padding(
         padding: EdgeInsets.fromLTRB(
-            20, 0, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),
+          20,
+          0,
+          20,
+          MediaQuery.of(ctx).viewInsets.bottom + 20,
+        ),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -32,7 +36,10 @@ Future<String?> _askIcebreaker(
             children: [
               Text(
                 '${type.emoji}  Antes de enviar, quebre o gelo',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
@@ -80,7 +87,9 @@ Future<String?> _askIcebreaker(
                   onPressed: controller.text.trim().length < 3
                       ? null
                       : () => Navigator.pop(
-                          ctx, '$selected\n${controller.text.trim()}'),
+                          ctx,
+                          '$selected\n${controller.text.trim()}',
+                        ),
                   icon: Text(type.emoji),
                   label: Text('Enviar ${type.label}'),
                 ),
@@ -93,13 +102,16 @@ Future<String?> _askIcebreaker(
   );
 }
 
-/// Pede a resposta do quebra-gelo, envia a brincadeira, salva no usuário e
-/// confirma na tela. Retorna true se foi enviada.
+/// Envia a brincadeira e confirma na tela. Por padrão, pede uma resposta ao
+/// quebra-gelo; o envio rápido do Kiss Me dispensa essa etapa.
+/// Retorna true se foi enviada.
 Future<bool> sendInteractionFromUi(
   BuildContext context,
   WidgetRef ref, {
   required UserEntity? target,
   required ActionType type,
+  bool requireIcebreaker = true,
+  InteractionSource source = InteractionSource.kissMe,
 }) async {
   final messenger = ScaffoldMessenger.of(context);
   final user = ref.read(authProvider).user;
@@ -111,17 +123,20 @@ Future<bool> sendInteractionFromUi(
   }
 
   var answer = '';
-  if (target.icebreakers.isNotEmpty) {
+  if (requireIcebreaker && target.icebreakers.isNotEmpty) {
     final result = await _askIcebreaker(context, target, type);
     if (result == null) return false;
     answer = result;
   }
 
-  await ref.read(interactionsProvider.notifier).send(
+  await ref
+      .read(interactionsProvider.notifier)
+      .send(
         fromUserId: user.id,
         target: target,
         type: type,
         answer: answer,
+        source: source,
       );
   messenger
     ..hideCurrentSnackBar()

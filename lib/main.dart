@@ -7,6 +7,8 @@ import 'features/auth/presentation/pages/login_page.dart';
 import 'features/main_navigation/presentation/pages/main_navigation_page.dart';
 import 'features/onboarding/presentation/pages/onboarding_page.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
+import 'features/auth/presentation/providers/age_gate_provider.dart';
+import 'features/auth/presentation/pages/age_gate_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -85,12 +87,43 @@ class AuthGate extends ConsumerWidget {
       case AuthStatus.authenticating:
         return const Scaffold(body: Center(child: CircularProgressIndicator()));
       case AuthStatus.onboarding:
-        return const OnboardingPage();
+        return const _AgeGuard(child: OnboardingPage());
       case AuthStatus.authenticated:
-        return const MainNavigationPage();
+        return const _AgeGuard(child: MainNavigationPage());
       case AuthStatus.unauthenticated:
         return const LoginPage();
     }
+  }
+}
+
+/// Só libera o app para quem confirmou ter 18 anos ou mais.
+class _AgeGuard extends ConsumerStatefulWidget {
+  final Widget child;
+  const _AgeGuard({required this.child});
+
+  @override
+  ConsumerState<_AgeGuard> createState() => _AgeGuardState();
+}
+
+class _AgeGuardState extends ConsumerState<_AgeGuard> {
+  @override
+  void initState() {
+    super.initState();
+    final user = ref.read(authProvider).user;
+    if (user != null) {
+      Future.microtask(() => ref.read(ageGateProvider.notifier).load(user.id));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return switch (ref.watch(ageGateProvider)) {
+      AgeStatus.loading =>
+        const Scaffold(body: Center(child: CircularProgressIndicator())),
+      AgeStatus.unknown => const AgeGatePage(),
+      AgeStatus.blocked => const AgeGatePage(blocked: true),
+      AgeStatus.adult => widget.child,
+    };
   }
 }
 

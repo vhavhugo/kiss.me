@@ -1,3 +1,4 @@
+import '../widgets/verified_seal.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -48,6 +49,13 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
   String? _gender;
   String? _education;
   bool _acceptSponsor = true;
+  final _pixController = TextEditingController();
+  final _rewardController = TextEditingController();
+  bool _pureDonation = true;
+  final _goalController = TextEditingController();
+  final _raisedController = TextEditingController();
+  final _updateController = TextEditingController();
+  final _updates = <Map<String, String>>[];
   final List<String> _icebreakers = [];
   final TextEditingController _customQuestion = TextEditingController();
   static const int _maxIcebreakers = 3;
@@ -85,6 +93,15 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
       final education = data['education'] as String?;
       _education = _educationLevels.contains(education) ? education : null;
       _acceptSponsor = data['acceptSponsor'] as bool? ?? true;
+      _pixController.text = data['pixKey'] as String? ?? '';
+      _rewardController.text = data['sponsorReward'] as String? ?? '';
+      _pureDonation = data['pureDonation'] as bool? ?? true;
+      _goalController.text = data['dreamGoal'] as String? ?? '';
+      _raisedController.text = data['dreamRaised'] as String? ?? '';
+      _updates
+        ..clear()
+        ..addAll(((data['dreamUpdates'] as List?) ?? const [])
+            .map((e) => Map<String, String>.from(e as Map)));
       _icebreakers
         ..clear()
         ..addAll((data['icebreakers'] as List? ?? []).cast<String>());
@@ -109,6 +126,12 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
         'education': _education,
         'birthDate': _birthDate?.toIso8601String(),
         'acceptSponsor': _acceptSponsor,
+        'pixKey': _pixController.text.trim(),
+        'sponsorReward': _rewardController.text.trim(),
+        'pureDonation': _pureDonation,
+        'dreamGoal': _goalController.text.trim(),
+        'dreamRaised': _raisedController.text.trim(),
+        'dreamUpdates': _updates,
         'icebreakers': _icebreakers,
         'photos': _photos.map(base64Encode).toList(),
       }),
@@ -120,6 +143,11 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
     _nameController.dispose();
     _aboutController.dispose();
     _dreamController.dispose();
+    _pixController.dispose();
+    _rewardController.dispose();
+    _goalController.dispose();
+    _raisedController.dispose();
+    _updateController.dispose();
     _cityController.dispose();
     _professionController.dispose();
     _customQuestion.dispose();
@@ -174,6 +202,12 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
     if (_birthDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Informe sua data de nascimento.')),
+      );
+      return;
+    }
+    if (_age! < 18) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('O Kiss Me é exclusivo para maiores de 18 anos.')),
       );
       return;
     }
@@ -275,6 +309,7 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
       appBar: AppBar(
         title: const Text('Meu Perfil'),
         actions: [
+          const VerifiedSeal(),
           TextButton(onPressed: _save, child: const Text('Salvar')),
         ],
       ),
@@ -379,6 +414,115 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                   onChanged: (v) => setState(() => _acceptSponsor = v),
                 ),
               ),
+              if (_acceptSponsor) ...[
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _pixController,
+                  decoration: const InputDecoration(
+                    labelText: 'Sua chave Pix (opcional)',
+                    helperText:
+                        'CPF, e-mail, telefone ou chave aleatória. Sem chave, o apoio é só por conversa.',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.pix_rounded),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SegmentedButton<bool>(
+                  segments: const [
+                    ButtonSegment(value: true, label: Text('Doação pura')),
+                    ButtonSegment(value: false, label: Text('Com contrapartida')),
+                  ],
+                  selected: {_pureDonation},
+                  onSelectionChanged: (v) =>
+                      setState(() => _pureDonation = v.first),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _goalController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Meta (R\$)',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _raisedController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Já recebi (R\$)',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const Padding(
+                  padding: EdgeInsets.only(top: 4),
+                  child: Text(
+                    'Os valores são informados por você e aparecem assim para quem visitar seu perfil. Seja transparente.',
+                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _updateController,
+                        maxLength: 140,
+                        decoration: const InputDecoration(
+                          labelText: 'Atualização do sonho',
+                          hintText: 'Conte como está indo',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                    IconButton.filled(
+                      onPressed: () {
+                        final t = _updateController.text.trim();
+                        if (t.isEmpty) return;
+                        setState(() {
+                          _updates.insert(0, {
+                            'text': t,
+                            'date': DateTime.now().toIso8601String(),
+                          });
+                          _updateController.clear();
+                        });
+                      },
+                      icon: const Icon(Icons.add),
+                    ),
+                  ],
+                ),
+                for (var i = 0; i < _updates.length; i++)
+                  ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.update_rounded, size: 20),
+                    title: Text(_updates[i]['text'] ?? ''),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.close, size: 18),
+                      onPressed: () => setState(() => _updates.removeAt(i)),
+                    ),
+                  ),
+                if (!_pureDonation) ...[
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _rewardController,
+                    maxLength: 120,
+                    decoration: const InputDecoration(
+                      labelText: 'O que você oferece em troca',
+                      hintText: 'Ex.: um jantar, uma foto da viagem, um agradecimento',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ],
+              ],
               _section('Caderno de perguntas',
                   subtitle:
                       'Quem quiser te enviar um ícone precisa responder uma delas. Escolha até $_maxIcebreakers.'),
